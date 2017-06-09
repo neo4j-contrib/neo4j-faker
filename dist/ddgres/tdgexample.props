@@ -1,0 +1,113 @@
+# Test data loader example
+# With this file test data structures can be loaded in neo4j database
+# You can use this as a template
+
+# Commit Size
+tdg.commit.size=2000
+
+####### NODE DEFINITIONS ######
+#
+#  tdg.node.list contains a comma seperated list of node label:amount
+# exanple
+tdg.node.list=p1:Person:1000,p2:Person:300,Company:150,c1:City:20
+#    in words: 500000 nodes with label Person will be created
+#              25000 nodes with Label Company will be created
+# Person
+tdg.node.props.Person.fullName=fullName
+tdg.node.props.Person.address=streetAddress
+tdg.node.props.Person.ssn=code:__#######_#
+tdg.node.props.Person.birthdate=randomDate:2012-01-01,2014-01-01
+tdg.node.props.Person.credit=elementFrom:12,22,33,44,55.2
+tdg.node.props.Person.caption=constant:Member of Thea Party
+tdg.node.props.p2.caption=constant:Democrat
+
+# City
+tdg.node.props.City.name=listFile:cities.txt,string
+tdg.node.props.City.country=elementFrom:'USA'
+# Company
+tdg.node.props.Company.name=companyName
+tdg.node.props.Company.url=url
+tdg.node.props.Company.bs=companyBS
+tdg.node.props.Company.slogan=companySlogan
+tdg.node.props.Company.text=txtText:40
+tdg.node.props.Company.sentence=txtSentence
+tdg.node.props.Company.sentences=txtSentences:3
+tdg.node.props.Company.paragraph=txtParagraph:10
+tdg.node.props.Company.paragraphs=txtParagraphs:3
+
+
+######## Lookup nodes
+# Use a cypher query to get a set of nodes to relate to.
+# Thess lookup nodes to create relations with
+# any generated node and or to set propertie on them.
+# note that the return set must contain one set of nodes only
+# tdg.lookup.nodes
+# tdg.lookup.nodes.list=matchOne
+# a cypher statement you must use a \ to have a multiline property value
+# tdg.lookup.cypher.matchOne=match (acc:Person) where acc.name =~ "A.*" return acc
+# tdg.lookup.props.matchOne.acc.startdate=randomDate:1975-01-01,2010-01-01
+		    
+###### Relation Definitions ##### TBD
+#tdg.rel.list contains a comma seperated list of relation identifiers 
+tdg.rel.list=personCompany,personPerson1,personPerson2,personCity1,personCity2,companyCity
+#
+# tdg.rel.def.<rel name>=<start node identifier>,relationtype,<end node identifier>,cardinality
+# Cardinality:
+#
+# 1-n      : The "end node" may have max one relation from the start node 
+# n-1      : The "start node" may have max one relation to the end node
+# n-n      : The "end node" may have many relations from the start node and the 
+#            "start node" may have many relations to the end node. (NOT IMPLEMENTED) 
+# 1-1      : The "end node" may have one relation from the start node and the 
+#            "start node" may have one relation to the end node
+# 
+# All relations may be created if possible.
+#
+tdg.rel.def.personCompany=p1,WORKS_FOR,Company,n-1
+tdg.rel.props.personCompany.year=year:1950,2000
+tdg.rel.def.personPerson1=p1,LIKES,p2,n-1
+tdg.rel.props.personPerson1.weight=percentage
+
+tdg.rel.def.personPerson2=p2,DISLIKES,p1,n-1
+tdg.rel.props.personPerson2.weight=percentage
+tdg.rel.def.personCity1=p1,LIVES,c1,n-1
+tdg.rel.def.personCity2=p2,LIVES,c1,n-1
+tdg.rel.def.companyCity=Company,LOCATED_IN,c1,n-1
+#
+# Repeater lookup nodes (In short repeatnode)
+# (TBD)
+#
+# Based on an input list every lookup query is executed.
+# Currently on repeater node and repeater relations no properties can be set
+# The execution of the 'repeating' process is after the normal
+# node, lookup node, relation processing,
+# therefore there is also a repeater relation definition
+# you can however relate there to node's and lookupnode's 
+#
+# first the list of repeatnodes
+# tdg.repeatnode.list=
+#
+# tdg.repeatnode.input.<repeatnode identifier>=<list>
+# possible values for <list>:
+#   - a comma separated list of values without quotes
+#     examples: input.repeatOne=bus,tram,metro
+#               input.repearOne=1,2,3,4
+#   - a file name. 
+#     This file must have a single value for each line.
+#     The file must be present in the .../plugins/tdgres directory
+#
+# tdg.repeatnode.cypher.<repeatnode identifier>.<name>=<cypher query>
+#   <repeatnode identifier> = must be a value from tdg.repeatnode.list
+#   <name> = is a name for the cypher query, you can have mulitple
+#            cypher queries in onw repeat node definition.
+#   <cypher query> = a valid cypher query just like normal lookup node it must
+#                    contain one or more ##INPUT## markers. The ##INPUT## will 
+#                    be replaced with a value from the input list
+#
+# tdg.rel.repeat.list=<relation identifier>,<relation identifier>
+# tdg.rel.repeat.def.<relation identifier>=<start node identifier>,<type,<end node identifier>,<cardinality>
+# <start/end node identifier>: - for normal nodes it is the "node identifier"
+#                              - for lookup nodes it "lookupnode identifier.column"
+#                              - for repeat nodes it s "repeatnode identifier#name.column"
+
+

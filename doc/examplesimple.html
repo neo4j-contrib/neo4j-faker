@@ -1,0 +1,30 @@
+<html>
+	<link rel='stylesheet' href="tdg.css" type='text/css' media='all'/> 
+
+<body>
+<div style="text-align:center"><table width="80%" border="0">
+<tr><td><h2>xxx</h2>
+<hr/>
+</td></tr>
+</table></div>
+
+	
+<h2>Usage</h2>
+<h3>Unmanaged Plugin<h2>
+You have to add the following line to your neo4j-server.properties file
+
+ org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.test.data.gen.ump=/testdata
+ (the package to url mapping is : org.neo4j.test.data.gen.ump=/testdata )
+
+
+The url to call the plugin is build up as follows:
+
+ http://localhost:7474/testdata/tdg/pfile/<property file name>
+ 
+ example:    http://localhost:7474/testdata/tdg/pfile/tdgexample.props
+
+ Both the embedded and unmanaged plugin variants use the property file.
+(When used in an Embedded form the TestDataGenerator is called via the java API. Output is than directed to system.out)
+
+</body>
+</html>

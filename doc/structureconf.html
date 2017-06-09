@@ -1,0 +1,297 @@
+<html>
+	<link rel='stylesheet' href="tdg.css" type='text/css' media='all'/> 
+
+<body>
+<div style="text-align:center"><table width="95%" border="0">
+<tr><td><h2>Property File: Node and Relation Settings</h2>
+<hr/><p>These settings define the nodes and the relations to be generated</p>
+</td></tr>
+</table>
+
+<table width="95%" cellspacing="10" >
+
+<tr ><td width="40%" ><span >==== Create Nodes </span>
+</td>
+<td><p></p>
+
+</td>
+</tr>
+
+<tr class="rw"  ><td >
+<span class="bold">tdg.node.list=[alias]:[Label]:[#create],[Label]:[#create],[Label]:[#create]</span>
+</td>
+<td><p>This propery contains a comma seperated list of "create definitions". The "create definition" has the following format:<br/>
+</br/>
+   [alias]:[label]:[#create]    
+    or
+   [label]:[#create]  (label = alias)</p>
+   
+<pre class="code">   example: 
+     tdg.node.list=p1:Person:20,p2:Person:20,Company:20
+     
+</pre>
+<p>In words: <br/>
+     A set of 20 Nodes with Label Person with alias p1 will be created<br/>
+     A set of 20 Nodes with Label Person with alias p2 will be created<br/>
+     A set of 20 Nodes with Label Company with alias Company will be created <br/><br/></p>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.node.props.[node alias | Label].propName</span>
+</td>
+<td><p>It is possible to set properties on a node.
+ </p>
+ <p>[node alias | Label]<br/>
+    When the label is chosen, the properties are set for all the Node sets which have the same label. 
+    You can also use the node alias name to set a property for only that set of nodes. You can combine these
+    two. use [label].propName for generic/shared properties and [node alias] for specific properties.
+    the [node alias].propName will overwrite the [label].propName value when it has the same Label!
+ </p>
+ <p>See the <a href="datagen.html">Generator Functions</a> for the possible property value generation possibilities. </p>
+<pre class="code">   example: 
+    tdg.node.props.Company.name=companyName
+    tdg.node.props.Company.url=url
+    tdg.node.props.Company.bs=companyBS
+    tdg.node.props.Company.slogan=companySlogan
+    tdg.node.props.Company.text=txtText:40
+    tdg.node.props.Company.sentence=txtSentence
+    tdg.node.props.Company.sentences=txtSentences:3
+    tdg.node.props.Company.paragraph=txtParagraph:10
+    tdg.node.props.Company.paragraphs=txtParagraphs:3</td>
+</tr>
+
+
+
+<tr ><td ><span >==== Lookup Nodes</span>
+</td>
+<td><p></p>
+
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.lookup.nodes.list=[alias],[alias]</span>
+</td>
+<td><p>All the aliases for lookups must be in this list. Note that an [alias] must be unique for create and lookup nodes</p>
+<pre class="code">   example: 
+     tdg.lookup.nodes.list=mJobs,mCity
+     
+</pre>
+</td>
+</tr>
+
+
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.lookup.cypher.[lookup alias]=[cypher statement]</span>
+</td>
+<td><p>Every lookup alias must have a cypher statement. You must use a '\' in the
+     cypher statement if you want to have a multiline statement. The cypher
+     statement must have one or more node columns in the return.</p>
+<pre class="code">   example: 
+     tdg.lookup.cypher.mJobs=match (job:Job) \
+                                where job.level = "high" \ 
+				return job
+				 
+     tdg.lookup.cypher.mCity=match (city:City) return city
+				  
+</pre>
+</td>
+</tr>
+</tr>
+<tr class="rw"  ><td ><span class="bold">tdg.lookup.props.[lookup alias].[return column].propName</span>
+</td>
+<td><p>It is possible to set properties on lookup node. The Lookup node is identified by the lookup alias and the name of the return column
+ </p>
+ <p>See the <a href="datagen.html">Generator Functions</a> for the possible property value generation possibilities. </p>
+<pre class="code">   example: 
+    tdg.lookup.props.mJobs.job.worktime=percentage</pre>
+</td>
+</tr>
+
+<tr ><td ><span >==== Relations</span>
+</td>
+<td><p></p>
+
+</td>
+</tr>
+
+
+<tr class="rw"  ><td ><span class="bold">tdg.rel.list=[relation alias],[relation alias],</span>
+</td>
+<td><p>It is possible to create relations between lookup nodes, between nodes
+    and between lookup nodes and nodes. The relations must be defined first in a list of relation aliases</p>
+<pre class="code">   example: 
+     tdg.rel.list=p1Likep2,p2dislikesp1,jobscity
+          
+</pre><p>Now for every relation alias a relation definition must be defined.</p>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.rel.def.[rel name]=[start identifier],[relationtype],[end identifier],[cardinality]</span>
+</td>
+<td><p>[start identifier]:<br/> this is a [alias] for a newly created node or a 
+                         [lookup alias].[cypher return column] for a lookup node which will be the 
+			  relation start node </p>
+     <p>[relationtype]    :<br/> The relationship type.</p>
+     <p>[end identifier]  :<br/> this is a [alias] for a newly created node or a  
+                          [alias].[cypher return column] for a lookup node which will be the 
+			  relation end node. </p>
+     <p>[cardinality]     : Possible values are: 1-n | n-1 | 1-1 <br/>
+			  
+         1-n :
+	  The "end node" may have max one relation from the start node <br/> 
+         n-1 :
+          The "start node" may have max one relation to the end node <br/>
+         1-1 :
+          The "end node" may have one relation from the start node and 
+	  the "start node" may have one relation to the end node<br/>
+
+	 <br/>
+    NOTE:<br/> If you use a lookup node in the relation then you MUST add the column 
+          name. The column name is the name of the return column of the cypher
+	  query. <br/> 
+<br/></p>
+<pre class="code">   example: 
+     tdg.rel.def.p1Likep2=p1,LIKES,p1,n-1
+     tdg.rel.def.p2dislikesp1=p2,DISLIKES,p1,1-1
+     tdg.rel.def.jobscity=mJobs.job,LOCATED_IN,mCity.city,n-1
+          
+</pre>
+</td>
+
+</tr>
+<tr class="rw"  ><td ><span class="bold">tdg.rel.props.[relation alias].propName</span>
+</td>
+<td><p>It is possible to set properties on a relation.
+ </p>
+ <p>See the <a href="datagen.html">Generator Functions</a> for the possible property value generation possibilities. </p>
+<pre class="code">   example: 
+    tdg.rel.props.p2dislikesp1.weight=percentage</pre>
+</td>
+</tr>
+
+<tr ><td ><span >==== Repeater Lookup Nodes 
+  (In short repeatnode)</span>
+</td>
+<td><p></p>
+
+</td>
+</tr>
+
+
+<tr class="rw"  ><td ><span class="bold">tdg.repeatnode.list=[repeatnode alias],[repeatnode alias],</span>
+</td>
+<td><p>Based on an input list every lookup query is executed.<br/>
+ Properties can be set on relations only.<br/>
+ The execution of the 'repeating' process is after the normal
+ node, lookup node, relation processing,
+ therefore there is also a repeater relation definition
+ you can however relate there to node's and lookupnode's </p>
+<pre class="code">   example: 
+     tdg.repeatnode.list=compperson
+          
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold"> tdg.repeatnode.input.[repeatnode alias]=[type]:[definition]
+</span>
+</td>
+<td><p>Based on an input list every lookup query is executed.<br/>
+possible values for [type]:[definition]<br/>
+   - list: a comma separated list of values without quotes<br/>
+     <pre class="code" >examples:
+    input.repeatOne=list:bus,tram,metro
+    input.repearOne=list:1,2,3,4</pre><br/>
+   - file:a File Name<br/>
+     This file must have a single value for each line.<br/>
+     The file must be present in the 'ddgres' directory<br/>
+     <pre class="code">example:
+    file:skills.txt
+	     </pre>
+   - range:[from],[to]<br/>
+    <pre class="code">example:
+    range:1,10
+	    </pre>
+   - query:[cypher query]<br/>
+     This Cypher query must return one column value (not a node!). <br/>
+     <pre class="code">example: 
+    query:match (c:City) return distinct c.name</pre><br/>
+
+</p>
+</td>
+</tr>
+<tr class="rw"  ><td ><span class="bold">tdg.repeatnode.cypher.[repeatnode alias].[name]=[cypher query]</span>
+</td>
+<td><p>[repeatnode alias]<br/>
+must be a value from tdg.repeatnode.list<br/>
+   [queryname]<br/>
+A name for the cypher query, you can have mulitple cypher queries in onw repeat node definition.<br/>
+   [cypher query]<br/>
+A valid cypher query just like normal lookup node it must contain one or more ##INPUT## markers. 
+The ##INPUT## will be replaced with a value from the input list
+ </p>
+<pre class="code">   example: 
+     tdg.repeatnode.cypher.compperson.pers=MATCH (prs:Person) \
+      -[:LIVES]->(cit:City {name:'##INPUT##'}) return prs
+     tdg.repeatnode.cypher.compperson.comp=MATCH (cmp:Company) \
+      -[:LOCATED_IN]->(cit:City {name:'##INPUT##'}) return cmp
+          
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.rel.repeat.list=[repeat relation alias]
+</span>
+</td>
+<td><p>Relation definitions for the repeat nodes. 
+    It is possible to relate to normal nodes, lookup node and repeat nodes.
+    Note that the repeat node is refreshed for every itteration over the input list.
+ </p>
+<pre class="code">   example: 
+     tdg.rel.repeat.list=compprs
+</pre>
+</td>
+</tr>
+
+
+<tr class="rw"  ><td ><span class="bold">tdg.rel.repeat.def.[repeat relation alias]=[start node identifier],[type],[end node identifier],[cardinality]</span>
+</td>
+<td><p>Relation definitions for the repeat nodes. 
+    It is possible to relate to normal nodes, lookup node and repeat nodes.
+    Note that the repeat node is refreshed for every itteration over the input list.
+ </p>
+ <p>[start/end node identifier]<br/> - for normal nodes it is the "node alias"
+                              - for lookup nodes it "lookup node alias.column"
+                              - for repeat nodes it s "repeatnode alias#name.column"</p>
+<pre class="code">   example: 
+     tdg.rel.repeat.def.compprs=compperson#pers.prs,WORKS_FOR,compperson#comp.cmp,n-1
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.rel.repeat.props.[repeat relation alias].propName</span>
+</td>
+<td><p>It is possible to set properties on a repeater relation.
+ </p>
+ <p>See the <a href="datagen.html">Generator Functions</a> for the possible property value generation possibilities. </p>
+<pre class="code">   example: 
+     tdg.rel.repeat.props.compprs.year=year:1950,2000
+</pre>
+</td>
+</tr>
+
+
+</table>
+</div>
+	 
+	  
+
+ 
+  
+    
+	  
+	  
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<html>
+<link rel='stylesheet' href="tdg.css" type='text/css' media='all'/> 
+	
+
+<body>
+<div style="text-align:center"><table width="95%" border="0">
+<tr><td><h2>Usage</h2>
+<hr/><p>You can use the Data Generator as unmanged plugin or in a unit test scenario.<br/>&nbsp;</p>
+</td></tr>
+<tr><td>
+	<h3>Unmanaged Plugin</h3>
+To getting started do the following:
+ <ol >
+     <li>Download the latest release from github</li>
+     <li>Unzip the distribution zip file into a directory</li>
+  <li>Copy all the contents of the dist directory to the neo4j server plugin directory</li>
+  <li>Register the unmanaged plugin on the neo4j server<br/>
+      You have to add the following line to your neo4j.conf file<br/>
+      <pre class="code">dbms.unmanaged_extension_classes=org.neo4j.faker.ump=/testdata</pre>
+
+      <p>For convenience you can disable the authentication. The curl examples in this documentation are without authentication.</p>
+      <pre class="code">dbms.security.authorization_enabled=false</pre>
+      
+      
+  </li>
+  <li>(re) Start the neo4j server</li>
+  <li>Test the plugin<br/>
+  <p>Test the availability of the plugin by calling it with a non existing property file name from you local browser</p>
+  <pre class="code">http://127.0.0.1:7474/testdata/tdg/pfile/test.props</pre>
+  <p>The browser will now give an error message stating that the file test.props cannot be found.</p>
+  </li>
+ </ol>
+
+<p>You are now ready to create your own property files in the ddgres directory. You can use the help or use an already existing load definition file as a template.
+</p>
+<p>In a typical scenario multiple load definition files are created to generate a data set. Keep the load definition files small!</p>
+<p>As you have seen above, the unmanaged plugin is called via an url. However to make scripts which call the ump you can make use of curl. Curl will display the text returned as soon as the ump puts it in the response. The browser instead may wait with showing the response until the processing is finished.</p>
+
+
+<p>The url to call the plugin is build up as follows:<br/><br/>
+<span class="bold">http://localhost:7474/testdata/tdg/pfile/[load definition file name]</span>
+</p>
+<p>To load an example data set you can use the following curl line. Note this will actual load data into the database!</p>
+
+
+<pre class="code">curl -g http://localhost:7474/testdata/tdg/pfile/tdgexample.props</pre>
+
+<br/>
+</td></tr>
+<tr><td><h3>Embedded</h3></td></tr>
+<tr><td>It is possible to Use the TestDataLoader with the following constructors
+<pre class="code">public TestDataLoader(GraphDatabaseService database
+		    ,Properties genProperties
+		    ,ExecutionEngine engine
+		    ,Writer writer
+		    ,String TDGRoot) </pre>
+<p>or</p>
+<pre class="code">public TestDataLoader(GraphDatabaseService database
+		    ,Properties genProperties
+		    ,ExecutionEngine engine
+		    ,String TDGRoot) </pre>
+
+<p>The TDGRoot is a filepath to the parent directory of the ddgres directory</p>
+<p>If the call is done without the Writer, then the output will be placed in the system output</p>
+<br/>
+<p>Here a coding example:</p>
+<pre class="code">
+	
+    String tdgroot = "/opt/test/tdg";// this is the test datagen 'root' directory.
+    String propsOne = "fraud_one.props";
+    String propsTwo = "fraud_two.props";
+    String propsThree = "fraud_three.props";
+    TestDataLoader tdg = new TestDataLoader(database, TDGUtils.loadProperties(tdgroot, propsOne), engine, tdgroot);
+    tdg.loadData();
+    tdg = new TestDataLoader(database, TDGUtils.loadProperties(tdgroot, propsTwo), engine, tdgroot);
+    tdg.loadData();
+    tdg = new TestDataLoader(database, TDGUtils.loadProperties(tdgroot, propsThree), engine, tdgroot);
+    tdg.loadData();
+
+	</pre>
+
+
+ </td></tr>
+<tr><td><h3>File Descriptions</h3></td></tr>
+<tr><td><p>All the files and directories are in the plugins directory of the neo4j server. Or an to be configured directory when using the tool embedded.</p><pre>
+    doc/                          : Directory with the help files for the Data Generator.
+
+    dist/neo4jFaker-&lt;version&gt;.jar : The logic for the test data generator
+
+    dist/ddgres/                  : Directory for all the resources. Property and list files.
+    
+    dist/ddgres/First_Names.csv   : Used by the person name generator
+    dist/ddgres/Last_Names.csv    : Used by the person name generator
+    
+    dist/ddgres/cities.txt        : A list with distinct US city names.
+                                    Used in the example.
+    dist/ddgres/tdgexample.props  : This is an example test data definition file
+</pre></td></tr>
+ 
+ 
+
+    
+
+</table></div>
+
+	
+
+</body>
+</html>

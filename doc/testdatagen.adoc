@@ -1,0 +1,517 @@
+= TestDataGen v0.6 
+
+:author: Kees Vegter
+:email:  kees.vegter@neotechnology.com
+
+== Introduction
+With this tool Test or Demo data can be generated into the neo4j database. 
+You can see it as a swiss army knife to build a fake data set. 
+
+The tool is inspired by GraphGen and the faker libraries (java faker),
+However to make it possible to generate larger datasets the person name generator (firstname, lastname and fullname) are implemented in a different way.
+ 
+=== Functions
+   - It is possible to generate larg amounts of data. 
+   - It is possible to add your own files (a value on each row) to generate domain specific data
+   - It is possible to add Cypher queries and use the result of that to generate data (properties and relations) to or on it.  
+   - Uses faker library (the non-person functions)
+   - It is possible to use 'smart properties' which can generate random valid date periods (from and to properties) or a set of Person or User properties
+   - Besides using a random approach to generate data it is possible to use a sequential approach to generate data.
+   - You can add any cypher statements before processing and/or after processing. In this way you can for instance combine load csv commands with the generator.
+   
+=== Architecture
+
+==== Unmanaged Plugin
+This tool is available as an unmanged plugin and must be run on the database server (it onlyaccepts urls with localhost or 127.0.0.1 as server name).
+
+==== Embedded
+It is possible to use this library to generate test data in a neo4j test database (in memory or embedded). #documentation tbd#
+
+==== Property File
+The generation of testdata is defined via a property files. This file must be located in the <tdgroot>/tdgres directory. When the tool is used as Unmanaged Plugin the <tdgroot> directory is the neo4j 'plugins' directory. 
+
+
+=== Usage
+Below here the usage as an unmanaged plugin is explained. Both the embedded and unmanaged plugin variants use the property file.
+(When used in an Embedded form the TestDataGenerator is called via the java API. Output is than directed to system.out)
+
+You have to add the following line to your neo4j-server.properties file
+
+ org.neo4j.server.thirdparty_jaxrs_classes=org.neo4j.test.data.gen.ump=/testdata
+ (the package to url mapping is : org.neo4j.test.data.gen.ump=/testdata )
+
+
+The url to call the plugin is build up as follows:
+
+ http://localhost:7474/testdata/tdg/pfile/<property file name>
+ 
+ example:    http://localhost:7474/testdata/tdg/pfile/tdgexample.props
+
+
+=== General Processing Flow
+
+  - output start comment
+  - execute pre-processing cypher statements
+  - load create node definitions
+  - load lookup node definitions
+  - load relation definitions
+  
+  - set lookup node properties
+  - create nodes (and properties)
+  - create relations (and properties)
+
+  - load repeat node definitions
+  - load repeat node relation definitions
+  - process repeat node properties and relation
+  
+  - execute post-processing cypher statements
+  - output end comment
+
+
+=== Property File Settings
+
+In the propery file you can define which nodes, relations and properties have to 
+be created.  
+
+==== General settings
+commit size::
+   
+   
+   tdg.commit.size=<size>
+   
+   example: 
+     tdg.commit.size=2000
+ 
+Create an index on the tgd_id property (possible values on / off, default = on) ::
+ 
+   The tdg_id index is NEEDED if you want to relate to newly created nodes. You should only switch it off if you want to create more than 10 000 000 nodes In this case you should use a seperate props file with lookup nodes to relate to these newly created nodes.
+ 
+    tdg.tdgid.index=on
+ 
+comment output::
+ You can add a start and end comments in your property file which will be 
+    sent to the response output. Every comment will be prepended with a date.
+    
+    examples
+    tdg.comment.start=Start My load script 
+    tdg.comment.end=End My load script 
+    
+==== Pre Cypher Statements
+
+You can put multiple cypher statements here which are run before all the node/relation/property handling
+  This is typically the place where to add for example load csv commands or do a count of the nodes. The execution results will be shown in the output.
+
+  tdg.pre.processing.cypher.<nr>
+
+  where <nr> is an integer starting with 1.
+  note that the numbers must be following each other! As soon as the engine cannot find a nr it stops
+  with executing cypher statements. So if you have a nr 1 and only a nr 3 nr 3 will not be executed
+ 
+  example:
+ 
+  tdg.pre.processing.cypher.1=match (n) return count(n) as totalNodeCount
+
+==== Create Nodes and Lookup Nodes
+
+Create Nodes::
+To create nodes you have to specify the "tdg.node.list" property with a comma seprated list of 'create definitions'. These create definitions have the following format:
+
+   <alias>:<label>:<#create>
+    
+    or
+    
+   <label>:<#create>  (label = alias)
+
+   tdg.node.list=<alias>:<Label>:<#create>,<Label>:<#create>,<Label>:<#create>
+
+   All the nodes to be created must be in this list. 
+
+ - The 'lookup' nodes
+   
+   tdg.lookup.nodes.list=<lookupname>,<lookupname>
+     All the lookups must be in this list. Note that the <lookupname> and <label>
+     identifiers must be unique (you cannot a lookupname which is also a label)
+   
+   tdg.lookup.cypher.<lookupname>=<cypher statement>
+     Every lookupname must have a cypher statement. You must use a '\' in the
+     cypher statement if you want to have a multiline statement. The cypher
+     statement must have one or more node columns in the return.
+     
+     example:
+     
+     tdg.lookup.cypher.matchOne=match (acc:Person) \
+                                where acc.name =~ "A.*" \ 
+				 return acc 
+   
+ - The relations between the nodes and or 'lookup nodes'
+    It is possible to create relations between lookup nodes, between nodes
+    and between lookup nodes and nodes.
+
+   tdg.rel.list=<rel name>,<rel name>,
+    This list must contain all the relation identifiers. 
+    
+   tdg.rel.def.<rel name>=<start identifier>,relationtype,<end identifier>,<cardinality>
+     <start identifier>: this is a <alias> for a newly created node or a 
+                         <lookupname>.<column> for a lookup node which will be the 
+			  relation start node
+     <relationtype>    : This wil be the relationship type.
+     <end identifier>  : this is a <label> for a newly created node or a  
+                         <lookupname>.<column> for a lookup node which will be the 
+			  relation end node.
+     <cardinality>     : Possible values are: 1-n | n-1 | 1-1 | n-n*
+			  
+         1-n 
+	  The "end node" may have max one relation from the start node 
+         n-1 
+          The "start node" may have max one relation to the end node
+         n-n*
+          The "end node" may have many relations from the start node 
+	  and the "start node" may have many relations to the end node.
+	  (THIS IS NOT IMPLEMENTED YET) 
+         1-1
+          The "end node" may have one relation from the start node and 
+	  the "start node" may have one relation to the end node
+
+         * not implemented yet!
+	 
+    NOTE: If you use a lookup node in the relation then you MUST add the column 
+          name. The column name is the name of the return column of the cypher
+	  query. 
+	  When you have the cypher query in the example above, you
+	  have to refer to this lookup node in the relation definition 
+	  with matchOne.acc
+	  
+- REPEATER LOOKUP NODES 
+  (In short repeatnode)
+ 
+ Based on an input list every lookup query is executed.
+ Currently on repeater node and repeater relations NO properties can be set
+ The execution of the 'repeating' process is after the normal
+ node, lookup node, relation processing,
+ therefore there is also a repeater relation definition
+ you can however relate there to node's and lookupnode's 
+
+ - List of repeatnode definitions
+ tdg.repeatnode.list=<repeatnode identifier>,<repeatnode identifier>,
+ 
+ - the input list of elements which must be walked through
+ tdg.repeatnode.input.<repeatnode identifier>=<type>:<definition>
+ possible values for <type>:<definition>
+   - list: a comma separated list of values without quotes
+     examples: input.repeatOne=list:bus,tram,metro
+               input.repearOne=list:1,2,3,4
+   - file:a File Name
+     This file must have a single value for each line.
+     The file must be present in the .../plugins/tdgres directory
+
+ - repeat lookup cypher definitions
+ 
+ tdg.repeatnode.cypher.<repeatnode identifier>.<name>=<cypher query>
+   <repeatnode identifier> = must be a value from tdg.repeatnode.list
+   <name> = is a name for the cypher query, you can have mulitple
+            cypher queries in onw repeat node definition.
+   <cypher query> = a valid cypher query just like normal lookup node it must
+                    contain one or more ##INPUT## markers. The ##INPUT## will 
+                    be replaced with a value from the input list
+
+  - relation definitions for the repeat nodes. 
+    It is possible to relate to normal nodes, lookup node and repeat nodes.
+    Note that the repeat node is refreshed for every itteration over the input list.
+    
+  tdg.rel.repeat.def.<relation identifier>=<start node identifier>,<type,<end node identifier>,<cardinality>
+   <start/end node identifier>: - for normal nodes it is the "node identifier"
+                              - for lookup nodes it "lookupnode identifier.column"
+                              - for repeat nodes it s "repeatnode identifier#name.column"
+
+  - It is possible to set the properties on relations created via repeat nodes.
+  
+    tdg.rel.repeat.props.<relation identifier>.propName
+	  
+	  
+
+- POST CYPHER STATEMENTS
+
+  You can put multiple cypher statements here which are run after all the node/relation/property handling
+  Typically in the case of not using tdg_id index you may want to add any index after the creation of the nodes
+
+  tdg.post.processing.cypher.<nr>
+  where <nr> is an integer starting with 1.
+  note that the numbers must be following each other! As soon as the engin cannot find a nr it stops
+  with executing cypher statements. So if you have a nr 1 and only a nr 3 nr 3 will not be executed
+ 
+  The output of the cypher statement will be dumped into the output example:
+ 
+  tdg.post.processing.cypher.1=match (n) return count(n) as totalNodeCount
+
+- PROPERTIES REFERENCE
+
+ Now per node and or lookup node and or relation the properties and property 
+ values can be definted in the following format:
+ 
+for nodes:
+ tdg.node.props.<label>.<propName>=<function>:<function specific params>
+ tdg.node.props.<alias>.<propName>=<function>:<function specific params>
+ 
+  First the Label property definition will be read, after that the alias for 
+  the same label. Alias properties will superseed label properties.
+  So it is good to put the common properties as label properties and
+  only those properties who a different for an alias in an alias property.
+  
+ for relations
+ tdg.rel.props.<relname>.<propName>=<function>:<function specific params>
+ 
+ for lookup nodes
+ tdg.lookup.props.<lookup name>.<column>.<propName=<function>:<function specific params>
+ 
+ <column> (only applicable for lookup nodes!
+    When you want to set a property on a lookup node you must prepend the
+    property name with the column name returned in the cypher statement!
+    
+    An example for setting a 'touched' property with the cypher 
+    example above:
+    tdg.lookup.props.acc.touched=now
+
+ for repeat node relations
+ tdg.rel.repeat.props.<relation identifier>.propName
+
+
+ <propName> : the name of the property
+    Special propertiess are starting with a ~   
+    ~FromToDateTime=FromDatefrom,FromDateTo,ToDateFrom,ToDateTo
+    This will generate a from and a to datetime property (timestamp)
+ 
+    ~FromToDate=FromDatefrom,FromDateTo,ToDateFrom,ToDateTo
+    This will generate a from and a to date property (long value generated
+    with date YYYYMMDD) 
+
+    The generated From and To dates will be done based on the parameters. 
+    To avoid period overlap make sure that  the FromDateFrom is before 
+    FromDateTo is before ToDateFrom is before ToDateTo
+                    
+    date format "YYYY-MM-DD"
+     example:
+         ~FromToDateTime=1960-01-30,1980-12-31,1981-01-01,2000-01-01
+ 
+  <function> : 
+    firtName
+      Person firstName 
+
+    lastName
+      Person lastName
+
+    fullName
+      Person fullName
+
+    companyName
+      Company name
+
+    companyBS 
+      Company Business
+
+    companySlogan 
+      Company slogan or buzzword 
+
+    isbn10 - 
+      isbn code 10 characters long
+
+    isbn13 
+      isbn code 13 characters long 
+
+    email  
+      email address
+
+    url
+      an web url
+
+    zipcode
+      Postal code
+
+    country
+      Country
+
+    phoneNumber
+      a phone number
+
+    streetAddress
+      Street Address
+
+    streetAddressFull
+      Street Address + secondary address
+
+    secondaryAddress
+      Secondary Address
+
+    streetName
+      Street name
+
+    streetSuffix
+      Street suffix
+
+    streetAddressNumber
+      Street Address Number
+
+    timezone
+      time zone
+
+    longitude
+      longitude
+
+    latitude
+      latitude
+
+    elementFrom:1,2,3,4,5,6
+    elementFrom:'a','bb','cc','ddd','e','6'   
+      Pick an  element from a supplied comma seperated list of elements
+
+    elementsFrom: 1,22,94;88,98;993,889,089
+    elementsFrom: 'A','B';'X','Y'
+      Pick an element array from a supplied semicolon seperated list of 
+      comma seperated arrays                                     
+
+    nextElementFrom:1,2,3,4,5,6
+    nextElementFrom:'a','bb','cc','ddd','e','6'   
+      Pick the next element starting with the first element.
+      It autodetects the return type String or Double
+
+    nextElementFromLong:1,2,3,4,5,6
+      Pick the next element starting with the first element
+
+    randomDateString:<dateFrom yyyy-MM-dd>,<dateTo yyyy-MM-dd>,<format> 
+      generate a datestring within a given range in the format given. 
+      If format is left away the format 'yyyy-mm-dd' is used 
+      example   .<propName>=randomDateString:2000-11-22,2014-09-09
+                .<propName>=randomDateString:2000-11-22,2014-09-09,MM-dd-yyyy
+
+    randomDate:<dateFrom yyyy-MM-dd>,<dateTo yyyy-MM-dd>
+      generate a date numeric value in format yyyymmdd within a given range.
+      example   .<propName>=randomDate:2000-11-22,2014-09-09
+
+    randomDateTime:<dateFrom yyyy-MM-dd>,<dateTo yyyy-MM-dd>
+      generate a date timestamp value within the given range
+      example   .<propName>=randomDateTime:2000-11-22,2014-09-09
+
+    now         
+      generates a timestamp value for now
+
+    year:<from tear yyyy><to year yyyy> 
+      generate a year number within a given range from,to
+      example: .<propName>=year:1950:2014
+
+    listFile:<filename>,<return type>
+      gets a randam value from a supplied list of possible values in a file. 
+      Every value in the file must be on a new line. Do not add a header.
+      With the return type you can specify the return type:
+      double,integer or string
+      example: listfile:cityList.txt,string
+               listFile:prices.txt,double
+               listFile:accountnr.txt,integer
+
+    listFileNext:<filename>,<return type>,<identifier>
+      gets the next value from a supplied list of possible values in a file. 
+      It starts with the first entry, when the end of the list is reached
+      it will start again at the beginning.
+      Every value in the file must be on a new line. Do not add a header.
+      With the return type you can specify the return type:
+      double,integer or string
+      With the indentifier it is possible to use listFileNext for the same 
+      file with values multiple times in the property definition, keeping the 
+      current position for each <identifier>
+      example: listfileNext:cityList.txt,string,abc
+               listFileNext:prices.txt,double,aa
+               listFileNext:accountnr.txt,integer,ab
+	       
+	       
+
+    number:<from integer>,<to integer>,<format>
+    number:<from integer>,<to integer>
+      Generates a number (double) within the from and to range.
+      When a format is given (java Decimal format) a string is returned, 
+      when the format is not specified a Double is returned
+
+    numberR:<from integer>,<to integer>,<nr of decimals integer>
+      Generates a number (double) within the from and to range.
+      The number will be rounded up the given nr of decimals
+
+    int:<from integer>,<to integer>
+      Generates a random integer within the given range. from must be smaller
+      than to. 
+
+    code:<code format>
+       on the place of a # an integer is generated.
+       on the place of a _ a capital letter is generated 
+       from (ABCDEFGHIJKLMNOPQRSTUVWXYZ)
+       examples: #### #### #### ####   
+	         AB###.####.####.ABC   
+                 ##-#####-##___
+
+    codeSeq:<code fomat>
+       The same as code but appended with a sequence number (long) starting with 
+       1 This code is then garantueed unique in this data genertion run.
+       For every <code format> a sequence is created.
+       example: area- 
+       now the text area-<sequence> will be returned for example
+         area-1,area-2 etc
+       
+    sequence:<sequemce name>
+       A sequence number is generated (long) with this name.
+       The sequence starts wirt the value 1
+       
+
+    percentage
+       generates an integer number between 0 and 100
+       (does the same as int:0,101)
+
+    boolean:<percentage true>
+       returns a boolean true or false the <percentage true> 
+       is used to get a percentage of true values over all the calls for this
+       function. So if 70 is given an avarage of 70 % of the calls will 
+       return true.
+
+    constantString
+       returns the constant string value you give.
+         example tdg.node.props.Person.caption=constantString:Member of
+
+    constantNumber
+       returns the constant number value you give. It will be a double in the db.
+         example tdg.node.props.Person.caption=constantNumber:10.2
+
+    txtWords:<number of words>
+       retuns an array of strings
+       
+    txtText:<number of letters>
+       returns a string
+       
+    txtSentence
+       return a string
+    
+    txtSentences:<number of sentences>
+       returns an array of strings
+    
+    txtParagraph:<sentence count>
+       returns a string 
+    
+    txtParagraphs:<paragraph count>
+       returns an array of paragraphs (string)
+       
+  
+    
+++++++ File descriptions ++++++++++++++++
+
+All the files and directories are in the plugins directory of the neo4j server.
+    testdatagen.README         : This file
+    testdatagen.jar            : The logic for the test data generator
+    javafaker-0.6-SNAPSHOT.jar : This is the 'changed' javafaker library
+				 do not change this file
+    snakeyaml-1.14.jar         : Used by the faker library
+    
+    tdgres                     : Directory for all the resources. Property and
+                                 list files.
+    
+    tdgres/First_Names.csv     : Used by the person name generator
+    tdgres/Last_Names.csv      : Used by the person name generator
+    
+    tdgres/cities.txt          : A list with distinct US city names. 
+                                 Used in the example.
+    tdgres/tdgexample.props    : This is an example test data definition file
+    
+    

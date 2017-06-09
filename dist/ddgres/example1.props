@@ -1,0 +1,55 @@
+# General Settings
+#
+# Commit Size
+tdg.commit.size=2000
+#
+####### NODE DEFINITIONS ######
+#
+#  tdg.node.list contains a comma seperated list of create node definitions  [alias:label:amount]
+# 
+tdg.node.list=p1:Person:2000,p2:Person:800,cit:City:30
+#
+#    in words: 2800 nodes with label Person will be created in two 'sets'
+#              20 nodes with Label City will be created
+#
+# Properties can be set with a label reference. This means all set's with the same Label will get these properties
+# Properties can also be set with a alias reference. This means that only these properties will be set of nodes 
+# for this specific alias. An alias referenced property preceeds the label referenced property
+#
+# Person
+tdg.node.props.Person.~Person=1970-01-01,1995-01-01
+tdg.node.props.Person.address=streetAddress
+tdg.node.props.Person.credit=elementFrom:12,22,33,44,55.2
+tdg.node.props.Person.caption=constant:Democrat
+# p2
+tdg.node.props.p2.caption=constant:Republican
+
+# City
+tdg.node.props.City.name=listFile:cities.txt,string
+tdg.node.props.City.country=constant:USA
+
+###### Relation Definitions ##### 
+# tdg.rel.list contains a comma seperated list of relation identifiers 
+tdg.rel.list=personPerson1,personPerson2,personCity1,personCity2
+#
+# tdg.rel.def.<rel name>=<start node identifier>,relationtype,<end node identifier>,cardinality
+# Cardinality:
+#
+# 1-n      : The "end node" may have max one relation from the start node 
+# n-1      : The "start node" may have max one relation to the end node
+# 1-1      : The "end node" may have one relation from the start node and the 
+#            "start node" may have one relation to the end node
+# 
+# All relations may be created if possible.
+#
+tdg.rel.def.personPerson1=p1,LIKES,p2,n-1
+#
+# we set a property on the relation here, a random percentage will be created
+#
+tdg.rel.props.personPerson1.weight=percentage
+
+tdg.rel.def.personPerson2=p2,DISLIKES,p1,n-1
+tdg.rel.props.personPerson2.weight=percentage
+
+tdg.rel.def.personCity1=p1,LIVES,cit,n-1
+tdg.rel.def.personCity2=p2,LIVES,cit,n-1

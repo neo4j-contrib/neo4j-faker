@@ -1,0 +1,35 @@
+# General Settings
+#
+# Commit Size
+tdg.commit.size=2000
+#
+# Now we connect Person who are living in a city to Companies located in the same 
+# city. For this we use the repeater lookup node structure
+#
+# first the list of repeatnodes
+tdg.repeatnode.list=compperson
+# note that in this query you have to return a property instead of a node!
+tdg.repeatnode.input.compperson=query:match (c:City) return distinct c.name
+#
+# Now we have to define the repeat lookup queries
+#
+tdg.repeatnode.cypher.compperson.pers=MATCH (prs:Person)-[:LIVES]->(cit:City {name:'##INPUT##'}) return prs
+tdg.repeatnode.cypher.compperson.comp=MATCH (cmp:Company)-[:LOCATED_IN]->(cit:City {name:'##INPUT##'}) return cmp
+#
+# Now we have to relate the persons with the company in the same city
+#
+tdg.rel.repeat.list=compprs
+tdg.rel.repeat.def.compprs=compperson#pers.prs,WORKS_FOR,compperson#comp.cmp,n-1
+tdg.rel.repeat.props.compprs.year=year:1950,2000
+###### Relation Definitions #####
+#tdg.rel.list contains a comma seperated list of relation identifiers 
+# tdg.rel.list=personCompany,personPerson,hacstate
+#
+# tdg.rel.def.<relation identifier>=<start node identifier>,relationtype,<end node identifier>,cardinality
+# Cardinality:
+#
+# 1-n      : The "end node" may have max one relation from the start node 
+# n-1      : The "start node" may have max one relation to the end node
+# n-n      : The "end node" may have many relations from the start node and the "start node" may have many relations to the end node. 
+# 1-1      : The "end node" may have one relation from the start node and the "start node" may have one relation to the end node
+# 

@@ -1,0 +1,100 @@
+<html>
+	<link rel='stylesheet' href="tdg.css" type='text/css' media='all'/> 
+
+<body>
+<div style="text-align:center"><table width="95%" border="0">
+<tr ><td colspan="2"><h2>Property File: General Settings</h2>
+<hr/>
+</td></tr>
+</table>
+	<table width="95%" cellspacing="10" >
+<tr class="rw" >
+	<td width="300px' valign="top"><span class="bold">tdg.commit.size=[size]</span></td>
+<td ><p>The commit size. Use a commit size which is more than 100</p>
+<pre class="code">example: 
+
+     tdg.commit.size=2000
+
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.tdgid.index=[on | off]</span>
+</td>
+<td><p>Create an index on the tgd_id property (possible values on / off, default = on) <br/>
+   The tdg_id index is NEEDED if you want to relate to newly created nodes. You should only switch it off if you want to create more than 10 000 000 nodes In this case you should use a seperate props file with lookup nodes to relate to these newly created nodes.
+</p>
+<pre class="code">example: 
+
+     tdg.tdgid.index=on
+     
+</pre>
+</td>
+</tr>
+
+
+<tr class="rw"  ><td ><span class="bold">comment output.start=[text]<br/>
+comment output.end=[text]<br/>
+</span>
+</td>
+<td><p>You can add a start and end comments in your property file which will be 
+    sent to the response output. Every comment will be prepended with a date.
+</p>
+<pre class="code">examples
+
+    tdg.comment.start=Start My load script 
+    tdg.comment.end=End My load script 
+    
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.pre.processing.cypher.[nr]</span>
+</td>
+<td><p>Pre Cypher Statements<br/>
+
+You can put multiple cypher statements here which are run before all the node/relation/property handling
+  This is typically the place where to add for example load csv commands or do a count of the nodes. The execution results will be shown in the output.
+</p>
+<p>[nr] is an integer starting with 1. <br/>
+  note that the numbers must be following each other! As soon as the engine cannot find a nr it stops
+  with executing cypher statements. So if you have a nr 1 and only a nr 3 nr 3 will not be executed</p>
+<pre class="code">example:
+ 
+    tdg.pre.processing.cypher.1=match (n) return count(n) as totalNodeCount
+   
+</pre>
+</td>
+</tr>
+
+<tr class="rw"  ><td ><span class="bold">tdg.post.processing.cypher.[nr]</span>
+</td>
+<td><p>Post Cypher Statements<br/>
+
+  You can put multiple cypher statements here which are run after all the node/relation/property handling
+  Typically in the case of not using tdg_id index you may want to add any index after the creation of the nodes
+
+  </p><p>
+  [nr] is an integer starting with 1.
+  note that the numbers must be following each other! As soon as the engin cannot find a nr it stops
+  with executing cypher statements. So if you have a nr 1 and only a nr 3 nr 3 will not be executed
+ 
+  The output of the cypher statement will be dumped into the output </p>
+<pre class="code">   example: 
+
+     tdg.post.processing.cypher.1=create index on :Person(name) 
+
+</pre>
+</td>
+</tr>
+
+
+
+
+</table></div>
+ 
+
+
+
+</body>
+</html>
