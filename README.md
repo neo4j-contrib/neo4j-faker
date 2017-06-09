@@ -7,7 +7,7 @@ The tool is inspired by GraphGen and the faker libraries (java faker), However t
 
 ## Getting started
 
-* Download the latest <a href="../releases">release</a> from github
+* Download the latest <a href="releases">release</a> from github
 * Unzip the distribution zip file into a directory
 * Copy all the contents of the dist directory to the neo4j server plugin directory
   * Data Generator Only
