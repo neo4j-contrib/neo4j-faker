@@ -1,5 +1,5 @@
 # neo4j-faker
-With this tool you can generate fake Demo or Test data into the neo4j database via **Cypher Functions** and or by using the **Data Generator**. You can see it as a Swiss Army knife to build a fake data set. 
+With this tool you can generate fake Demo or Test data into the neo4j database via **Cypher Functions** (neo4j 3.1+) and or by using the **Data Generator**. You can see it as a Swiss Army knife to build a fake data set. 
 
 The tool is inspired by GraphGen and the faker libraries (java faker), However to make it possible to generate larger datasets the person name generator (firstname, lastname and fullname) is implemented in a different way.
 
@@ -10,6 +10,11 @@ The tool is inspired by GraphGen and the faker libraries (java faker), However t
 * Download the latest <a href="../../releases">release</a> from github
 * Unzip the distribution zip file into a directory
 * Copy all the contents of the dist directory to the neo4j server plugin directory
+  * Faker Cypher Functions
+    * Add the following line in the noo4j.conf file to allow access to the faker functions.
+    
+      <pre class="code">dbms.security.procedures.unrestricted=*</pre>
+    
   * Data Generator Only
     * Register the Data Generator Unmanaged Plugin on the neo4j server
     * You have to add the following line to your neo4j.conf file
