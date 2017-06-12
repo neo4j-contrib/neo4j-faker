@@ -6,12 +6,12 @@
 
     <groupId>org.neo4j</groupId>
     <artifactId>neo4j-faker</artifactId>
-    <version>0.1-beta</version>
+    <version>0.9.0</version>
 
     <properties>
         <neo4j.version>3.2.0</neo4j.version>
         <artifactId>neo4jFaker</artifactId>
-        <version>0.9-beta</version>
+        <version>0.9.0</version>
     </properties>
     <dependencies>
         <dependency>

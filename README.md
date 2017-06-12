@@ -37,11 +37,12 @@ The tool is inspired by GraphGen and the faker libraries (java faker), However t
 
 The complete help with detailed instructions and examples on how to create the property files with the data definitions for the data loader can be found in the doc directory (doc/index.html).
 
-## Cypher Faker Functions
+## Cypher Faker Functions and Procedures
 
-You can call dbms.function() in the browser to see the available fkr. functions.
+You can call dbms.function() in the browser to see the available fkr. functions. There is one procedure to create relationships: fkr.createRelations.
 
 examples:
+
 ```$xslt
 // generating 1000 Person nodes
 foreach (i in range(0,1000) |
@@ -49,6 +50,7 @@ foreach (i in range(0,1000) |
     set p += fkr.person('1960-01-01','2000-01-01')
 )
 ```
+
 
 ```
 // generating 500 CreditCards
@@ -59,6 +61,48 @@ foreach (a in range(0,500) |
     }
 ```
 
+```$xslt
+//
+// generating a Person City structute with relationships
+//
+create index on :City(name);
+
+
+foreach (i in range(0,100000) |
+    create (p:Person:Proc { uid : i })
+    set p += fkr.person('1960-01-01','2000-01-01')
+)
+;
+
+foreach (ci in range(0,40) |
+    merge (cit:City:Proc { name : fkr.stringFromFile("cities.txt") })
+)
+;
+
+match (c:City:Proc) remove c:Proc with collect(c) as cities
+match (p:Person:Proc) remove p:Proc with cities, collect(p) as persons
+with cities
+,    persons
+call fkr.createRelations(persons, "LIVES_IN" , cities, "n-1") yield relationships as livesRelations
+call fkr.createRelations(persons, "IS_MARE" , cities , "1-n") yield relationships as mareRelations
+call fkr.createRelations(cities, "HAS_POLICE_CHIEF" , persons, "1-1") yield relationships as chiefRelations
+foreach ( rel in livesRelations |
+set rel.likes = fkr.long(0,100)
+)
+return size(cities), size(persons), size(livesRelations), size(mareRelations), size(chiefRelations) 
+;
+
+```
+In this example we use a temporary extra Label 'Proc' to match only the nodes just created for creating relationships.
+
+### Procedures
+
+| name | signature | description |
+| ---- | --------- | ----------- |
+| fkr.createRelations | fkr.createRelations(startNodes :: LIST? OF ANY?, relationshipType :: STRING?, endNodes :: LIST? OF ANY?, cardinality :: STRING?) :: (relationships :: LIST? OF RELATIONSHIP?) | Create Relationships between a list of start nodes and a list of end nodes. cardinality can be '1-n' (The end node may have max 1 relation from the start node), 'n-1' (The start node may have max one relation to the end node) or '1-1' (The start and end node may have max one relationship of this type). Note that the procure returns one row with a list of relationships in it| 
+
+
+### Functions
 
 #### Special Functions (generating multiple property values)
 

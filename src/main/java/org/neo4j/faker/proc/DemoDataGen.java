@@ -1,15 +1,20 @@
 package org.neo4j.faker.proc;
 
+import org.neo4j.faker.core.DynRel;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.logging.Log;
-import org.neo4j.procedure.Context;
-import org.neo4j.procedure.Description;
-import org.neo4j.procedure.Name;
-import org.neo4j.procedure.UserFunction;
+import org.neo4j.procedure.*;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class DemoDataGen {
+	public static final String ONE_TO_MANY = "1-n";
+	public static final String MANY_TO_ONE = "n-1";
+	public static final String ONE_TO_ONE = "1-1";
+
 
 	@Context public GraphDatabaseAPI db;
 
@@ -68,7 +73,6 @@ public class DemoDataGen {
 		Map<String,Object> m = new HashMap<>();
 
 		long cur = System.currentTimeMillis();
-		//System.out.println("def " + def);
 		// the amount of minutes
 		Random r = new Random();
 		int cor = r.nextInt(minutes.intValue() * 60000);
@@ -542,5 +546,123 @@ public class DemoDataGen {
         return DDGFunctions.getInstance( db).getFaker().lorem().paragraphs(parCount.intValue());
     }
 
+
+
+	@Procedure(name = "fkr.createRelations", mode = Mode.WRITE)
+	@Description("Create Relationships between a list of start nodes and a list of end nodes. cardinality can be '1-n' (The end node may have max 1 relation from the start node), 'n-1' (The start node may have max one relation to the end node) or '1-1' (The start and end node may have max one relationship of this type).")
+	public Stream<RelationshipResult> createRelations(@Name("startNodes") final List<Object> startNodes
+			, @Name("relationshipType") final String relType
+			, @Name("endNodes") final List<Object> endNodes
+			, @Name("cardinality") final String cardinality) throws Exception {
+
+		List<RelationshipResult> res = new ArrayList<>();
+		res.add(new RelationshipResult(privateCreateRelations(startNodes,relType,endNodes,cardinality)));
+		return res.stream();
+	}
+
+	private List<Relationship> privateCreateRelations(final List<Object> startNodes
+			, final String relType
+			, final List<Object> endNodes
+			, final String cardinality) throws Exception {
+
+		try {
+			if (relType == null || relType.isEmpty()) {
+				throw new Exception("RelationshipType is missing!");
+			}
+			if (cardinality == null || cardinality.isEmpty()) {
+				throw new Exception("cardinality is missing!");
+			}
+			List<Relationship> res = new LinkedList<>();
+
+			if (startNodes == null || startNodes.size() == 0 || endNodes == null || endNodes.size() == 0) {
+				return res;
+			}
+			// check on startNodes
+			if (!validNodes(startNodes.get(0), endNodes.get(0))) {
+				throw new Exception("The lists of nodes must contain a node id (Long) or a Node object.");
+			}
+			if (cardinality.equals(ONE_TO_MANY)) {
+				// The "end node" may have max one relation from the start node
+				// we loop here through the end nodes and every end node may get a relation to the start node
+				// for determining the start node we use a randomizer.
+				Random random = new Random();
+				for (Object endNode : endNodes) {
+					Object startNode = startNodes.get(random.nextInt(startNodes.size()));
+					res.add( createRelation(startNode, relType, endNode));
+				}
+				return res;
+
+			} else if (cardinality.equals(MANY_TO_ONE)) {
+
+				// The "start node" may have max one relation to the end node
+				// we loop here through the start nodes and pick a random end node to connect to
+				Random random = new Random();
+				for (Object startNode: startNodes) {
+					Object endNode = endNodes.get(random.nextInt(endNodes.size()));
+					res.add( createRelation(startNode, relType, endNode));
+				}
+				return res;
+			} else if (cardinality.equals(ONE_TO_ONE)) {
+
+				if (startNodes.equals(endNodes)) {
+					// self reference we have to create now an extra list
+					List<Node> tmpList = new ArrayList<>();
+					Collections.copy(endNodes, tmpList);
+					Collections.shuffle(tmpList);
+					int index = 0;
+					for (Object startNode : startNodes) {
+						Object endNode = endNodes.get(index);
+						index++;
+						res.add(createRelation(startNode, relType, endNode));
+					}
+					return res;
+				}
+				if (startNodes.size() <= endNodes.size()) {
+
+					int index = 0;
+					for (Object startNode : startNodes) {
+						Object endNode = endNodes.get(index);
+						index++;
+						res.add(createRelation(startNode, relType, endNode));
+					}
+					return res;
+				} else {
+
+					int index = 0;
+					for (Object endNode : endNodes) {
+						Object startNode = startNodes.get(index);
+						index++;
+						res.add(createRelation(startNode, relType, endNode));
+					}
+					return res;
+				}
+			} else {
+				// invalid cardinality
+				throw new Exception("Invalid cardinality, Only '1-n','n-1' and '1-1' are allowed");
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+			throw t;
+		}
+
+	}
+
+
+	private Relationship createRelation(Object start, String type, Object end) {
+		Node nStart = getNode(start);
+		Node nEnd = getNode(end);
+		return nStart.createRelationshipTo(nEnd, DynRel.get(type));
+	}
+
+	private Node getNode(Object nob) {
+		if (nob instanceof Number) {
+			return db.getNodeById(((Number) nob).longValue());
+		} else {
+			return (Node) nob;
+		}
+	}
+	private boolean validNodes(Object startObject, Object endObject) {
+		return (startObject instanceof Number || startObject instanceof Node) && (endObject instanceof Number || endObject instanceof Node);
+	}
 
 }

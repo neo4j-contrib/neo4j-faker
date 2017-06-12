@@ -25,5 +25,5 @@ public class TDGConstants {
 	public static final String PROP_PRE_STATEMENTS_PREFIX="tdg.pre.processing.cypher.";
 	public static final String PROP_START_COMMENT="tdg.comment.start";
 	public static final String PROP_END_COMMENT="tdg.comment.end";
-	public static final String VERSION = "0.8.2 Beta";
+	public static final String VERSION = "0.9.0";
 }
