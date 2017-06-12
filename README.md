@@ -63,7 +63,7 @@ foreach (a in range(0,500) |
 
 ```$xslt
 //
-// generating a Person City structute with relationships
+// generating a Person City structure with relationships
 //
 create index on :City(name);
 
