@@ -1,8 +1,10 @@
 package org.neo4j.faker.core;
 
 import org.neo4j.faker.data.PropertyParser;
+import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Result;
 
 import java.io.IOException;
@@ -125,7 +127,7 @@ public class TestDataLoader {
 		for (DefLUNode lud : ludef) {
 			
 			out(" executing " + lud.getLookup() + "  cypher query " + lud.getCypher());
-			Result res = database.execute(lud.getCypher());
+			Result res = DBLoader.dbExecute( database,lud.getCypher());
 			// out(" qu sery result " + res.dumpToString());
 			out(" The return columns:  " + res.columns());
 			int size = 0; 
@@ -280,8 +282,16 @@ public class TestDataLoader {
 			String cypher = props.getProperty(TDGConstants.PROP_POST_STATEMENTS_PREFIX + i,"");
 			if (cypher.equals("")) break;
 			out(" ============== post cypher query " + i + "===================");
-			Result er = database.execute(cypher);
-			out(er.resultAsString());
+			try {
+				Result er = DBLoader.dbExecute(database, cypher);
+				out(er.resultAsString());
+			} catch (QueryExecutionException qe) {
+				if (qe.getMessage().indexOf("An equivalent index already exists") > -1 ) {
+					out("WARNING " + qe.getMessage());
+				} else {
+					out(" ERROR " + qe.getMessage());
+				}
+			}
 		}
 	}
 	private void executePreProcessingCypherStateMents() throws IOException {
@@ -290,8 +300,16 @@ public class TestDataLoader {
 			String cypher = props.getProperty(TDGConstants.PROP_PRE_STATEMENTS_PREFIX + i,"");
 			if (cypher.equals("")) break;
 			out(" ============== pre cypher query " + i + "===================");
-			Result er = database.execute(cypher);
-			out(er.resultAsString());
+			try {
+				Result er = DBLoader.dbExecute(database,cypher);
+				out(er.resultAsString());
+			} catch (QueryExecutionException qe) {
+				if (qe.getMessage().indexOf("An equivalent index already exists") > -1 ) {
+					out("WARNING " + qe.getMessage());
+				} else {
+					out(" ERROR " + qe.getMessage());
+				}
+			}
 		}
 	}
 	public void processOneToMany(DefRel dr, List<NodeIdentifier>  startNID, List<NodeIdentifier>  endNID) throws Exception {

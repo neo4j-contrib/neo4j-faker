@@ -59,7 +59,7 @@ public class RepeatNodesProcessor {
 					String cypher = cypherDefinitions.get(qName).replaceAll("##INPUT##",input);
 					// dlu.setCypher(cypher)
 					out(" ====== executing query name " + dlu.getLookup() + " :" + cypher);
-					Result res = tdl.getDatabase().execute(cypher);
+					Result res = DBLoader.dbExecute(tdl.getDatabase(),cypher);
 					out(" ====== The return columns:  " + res.columns());
 					int size = 0;
 					while (res.hasNext()) {
@@ -296,7 +296,9 @@ public class RepeatNodesProcessor {
 		} else if (type.equals("query")) {
 				// two paramter are there in the def
 				// def contains the query
-				Result res = tdl.getDatabase().execute(def);
+
+			    //	Result res = tdl.getDatabase().execute(def);
+			    Result res = DBLoader.dbExecute(tdl.getDatabase(), def);
 				out(" ====== The return columns:  " + res.columns());
 				ArrayList<String> vals = new ArrayList<String>();
 				while (res.hasNext()) {

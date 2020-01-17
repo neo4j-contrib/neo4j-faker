@@ -1,13 +1,13 @@
 package org.neo4j.faker.proc;
 
 import com.github.javafaker.Faker;
+import org.neo4j.configuration.Config;
 import org.neo4j.faker.data.ValueGen;
-import org.neo4j.kernel.configuration.Config;
-import org.neo4j.kernel.internal.GraphDatabaseAPI;
+import org.neo4j.faker.util.TDGUtils;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.faker.data.PersonNamesGen;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -25,7 +25,7 @@ public class DDGFunctions {
     public SimpleDateFormat getSdf(){
         return sdf;
     }
-    public static DDGFunctions getInstance(GraphDatabaseAPI db) throws IOException {
+    public static DDGFunctions getInstance(GraphDatabaseService db) throws Exception {
 
         if (inst == null) {
             synchronized (sdf) {
@@ -36,37 +36,19 @@ public class DDGFunctions {
         }
         return inst;
     }
-    private DDGFunctions(GraphDatabaseAPI db) throws IOException {
-        Config conf = null;
+    private DDGFunctions(GraphDatabaseService db) throws Exception {
+
+        String pluginsDir = TDGUtils.getPluginDir(null);
+        tdgRoot = pluginsDir + File.separator;
         try {
-            conf = db.getDependencyResolver().resolveDependency(Config.class);
-
-        } catch (Throwable ee) {
+            faker = new Faker();
+            // fakerDump(faker);
+            names = new PersonNamesGen(tdgRoot);
+            valuegen = new ValueGen(tdgRoot);
+        } catch (Exception ee) {
             ee.printStackTrace();
-
+            throw ee;
         }
-
-
-        String home = conf.getRaw().get(CONFIG_HOME_DIR_PROP);
-        System.out.println("Home from config " + home);
-        if (home == null) {
-            home = System.getProperty("neo4j.home");
-            System.out.println("Home from system property neo4j.home " + System.getProperty("neo4j.home"));
-        }
-        if (home == null) {
-            home = System.getenv("NEO4J_HOME");
-            System.out.println("Home from system env NEO4J_HOME " + System.getenv("NEO4J_HOME"));
-        }
-        if (home == null) {
-            home = ".";
-            System.out.println("Home is not know via context, working with a '.'");
-        }
-        tdgRoot = home + File.separator + "plugins" + File.separator;
-
-        faker = new Faker();
-        // fakerDump(faker);
-        names = new PersonNamesGen(tdgRoot);
-        valuegen = new ValueGen(tdgRoot);
     }
 
     public PersonNamesGen getNames() { return names; }
@@ -76,4 +58,5 @@ public class DDGFunctions {
     public ValueGen getValuegen() {
         return valuegen;
     }
+
 }

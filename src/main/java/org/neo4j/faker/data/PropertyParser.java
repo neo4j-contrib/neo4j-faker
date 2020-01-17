@@ -249,10 +249,10 @@ public class PropertyParser {
 				r = funcDef;
 				break;
 			case "constantnumber" :
-				r = new Double(funcDef);
+				r = Double.valueOf(funcDef);
 				break;
 			case "constantlong" :
-				r = new Long(funcDef);
+				r = Long.valueOf(funcDef);
 				break;
 			case "txtwords" :
 				r = faker.lorem().words(Integer.valueOf(funcDef)).toArray(new String[0]);
@@ -274,7 +274,6 @@ public class PropertyParser {
 				break;
 			default :
 				r = propDef; // just giving through
-				
 		}
 		return r;
 	}

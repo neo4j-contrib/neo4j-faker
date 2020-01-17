@@ -1,9 +1,11 @@
 package org.neo4j.faker.proc;
 
+import org.neo4j.configuration.Config;
 import org.neo4j.faker.core.DynRel;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.kernel.internal.GraphDatabaseAPI;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
@@ -16,7 +18,7 @@ public class DemoDataGen {
 	public static final String ONE_TO_ONE = "1-1";
 
 
-	@Context public GraphDatabaseAPI db;
+	@Context public GraphDatabaseService db;
 
 	@Context public Log log;
 
@@ -24,6 +26,7 @@ public class DemoDataGen {
 	@Description("generates a system User with firstname, lastname, userId, mail and startdate")
 	public Map<String,Object> generateUser(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo, final @Name("companyDomain") String compDomain) throws Exception {
 		Map<String,Object> m = new HashMap<>();
+
 		String firstName = DDGFunctions.getInstance( db).getNames().firstName();
 		String lastName = DDGFunctions.getInstance( db).getNames().lastName();
 		String userid = firstName.toLowerCase() + lastName.toLowerCase().substring(0,2);
@@ -59,7 +62,7 @@ public class DemoDataGen {
 	@Description("This will generate a date and seperate time property" )
 	public Map<String,Object> generateFromAndDate(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
 		Map<String,Object> m = new HashMap<>();
-		Date d = DDGFunctions.getInstance( db).getValuegen().getParsedDate( dFrom + "," + dTo).getRandomDateObject();
+		Date d = DDGFunctions.getInstance( db ).getValuegen().getParsedDate( dFrom + "," + dTo).getRandomDateObject();
 		String s = DDGFunctions.getInstance( db).getSdf().format(d);
 		m.put("date",s);
 		m.put("time", d.getTime());
@@ -656,7 +659,10 @@ public class DemoDataGen {
 
 	private Node getNode(Object nob) {
 		if (nob instanceof Number) {
-			return db.getNodeById(((Number) nob).longValue());
+            Transaction tx = db.beginTx();
+            Node rn = tx.getNodeById(((Number) nob).longValue());
+            tx.close();
+			return rn;
 		} else {
 			return (Node) nob;
 		}

@@ -28,7 +28,7 @@ public class ValueGen {
 	}
 	public long getSeq(String def) {
 		if (!codeSequences.containsKey(def)) {
-			codeSequences.put(def, new Long(0));
+			codeSequences.put(def, Long.valueOf(0));
 		}
 		long l = codeSequences.get(def);
 		l++;
@@ -145,7 +145,7 @@ public class ValueGen {
 		return r;
 	}
 	public Double nextDoubleElement(String def) {
-		if (def == null) return new Double(-1);
+		if (def == null) return Double.valueOf(-1);
 		int pos = 0;
 		if (!nelmPOS.containsKey(def)) {
 			nelmPOS.put(def,pos);
@@ -160,7 +160,7 @@ public class ValueGen {
 		return r;
 	}
 	public Long nextLongElement(String def) {
-		if (def == null) return new Long(-1);
+		if (def == null) return Long.valueOf(-1);
 		if (!parsedLELM.containsKey(def)) {
 			String[] vals = def.split(",");
 			List<Long> llist = new ArrayList<Long>();
@@ -187,7 +187,7 @@ public class ValueGen {
 
 	public Long randomLongElement(String def) {
 
-		if (def == null) return new Long(-1);
+		if (def == null) return Long.valueOf(-1);
 		if (!parsedLELM.containsKey(def)) {
 			String[] vals = def.split(",");
 			List<Long> llist = new ArrayList<Long>();
@@ -205,7 +205,7 @@ public class ValueGen {
 
 
 	public Double randomDoubleElement(String def) {
-		if (def == null) return new Double(-1);
+		if (def == null) return Double.valueOf(-1);
 		Random rnd = new Random();
 		Double[] p = (Double[]) parsedELM.get(def);
 		return p[rnd.nextInt(p.length)];
@@ -272,7 +272,7 @@ public class ValueGen {
 		return p;
 	}
 	public Integer getRandomYear(String def) {
-		if (def == null) return new Integer(0);
+		if (def == null) return Integer.valueOf(0);
 		String[] vals = def.split(",");
 		int yF = Integer.valueOf(vals[0]);
 		int yT = Integer.valueOf(vals[1]);
@@ -323,7 +323,7 @@ public class ValueGen {
 		}
 		Integer iPos = nelmPOS.get(def);
 		if (iPos == null) {
-			iPos = new Integer(0);
+			iPos = Integer.valueOf(0);
 			nelmPOS.put(def, iPos);
 		}
 		int pos = iPos;
@@ -442,7 +442,7 @@ public class ValueGen {
 	
 	public Long getNow() {
 		Date d = new Date();
-		Long n = new Long(d.getTime());
+		Long n = Long.valueOf(d.getTime());
 		return n;
 	}
 	public String getToday() {

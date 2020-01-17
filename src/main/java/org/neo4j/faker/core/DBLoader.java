@@ -1,5 +1,6 @@
 package org.neo4j.faker.core;
 
+import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.IndexDefinition;
@@ -44,12 +45,12 @@ public class DBLoader {
 	public void createUniqueIndex(String label, String property) {
 		// indexes are created directly in one transaction
 		try ( Transaction tx = database.beginTx()) {
-			Schema schema = database.schema();
+			Schema schema = tx.schema();
 			// check first if index already exists
 			boolean notExist = true;
 			
-			Iterator<ConstraintDefinition> iter = schema.getConstraints(DynamicLabel.label(label)).iterator();
-			
+			Iterator<ConstraintDefinition> iter = schema.getConstraints(Label.label(label)).iterator();
+
 			while (iter.hasNext()) {
 				ConstraintDefinition cd = iter.next();
 				Iterator<String> propiter = cd.getPropertyKeys().iterator();
@@ -65,18 +66,18 @@ public class DBLoader {
 			}
 			
 			
-			if (notExist) schema.constraintFor(DynamicLabel.label(label)).assertPropertyIsUnique(property).create();
-			tx.success();
+			if (notExist) schema.constraintFor(Label.label(label)).assertPropertyIsUnique(property).create();
+			tx.commit();
 		}
 	}
 	public void createIndex(String label, String property) {
 		// indexes are created directly in one transaction
 		try ( Transaction tx = database.beginTx()) {
-			Schema schema = database.schema();
+			Schema schema = tx.schema();
 			// check first if index already exists
 			boolean notExist = true;
 			
-			Iterator<IndexDefinition> iter = schema.getIndexes(DynamicLabel.label(label)).iterator();
+			Iterator<IndexDefinition> iter = schema.getIndexes(Label.label(label)).iterator();
 			
 			while (iter.hasNext()) {
 				IndexDefinition cd = iter.next();
@@ -93,8 +94,8 @@ public class DBLoader {
 			}
 			
 			
-			if (notExist) schema.indexFor(DynamicLabel.label(label)).on(property).create();
-			tx.success();
+			if (notExist) schema.indexFor(Label.label(label)).on(property).create();
+			tx.commit();
 		}
 	}
 	public void setNodeProperties(NodeIdentifier node, Map<String,Object> props) {
@@ -126,8 +127,8 @@ public class DBLoader {
 			}
 			for (TDNode tdn: createNodeList) {
 				// create a node here in the db
-				Node nn = database.createNode();
-				nn.addLabel(DynamicLabel.label(tdn.getLabel()));
+				Node nn = tx.createNode();
+				nn.addLabel(Label.label(tdn.getLabel()));
 				for (String propName : tdn.getProps().keySet()) {
 					Object val = tdn.getProps().get(propName);
 					nn.setProperty(propName, val);
@@ -136,7 +137,7 @@ public class DBLoader {
 			// clear the list
 			
 			createNodeList.clear();
-			tx.success();
+			tx.commit();
 		}
 //		try{
 //			if (createNodeList.size() > 0) {
@@ -154,10 +155,10 @@ public class DBLoader {
 			// walk though the list
 			for (TDRelation tdr: createRelationList) {
 				// create a node here in the db
-				Node startNode = getNode(tdr.getFrom());
-				Node endNode = getNode(tdr.getTo());
+				Node startNode = getNode(tx, tdr.getFrom());
+				Node endNode = getNode(tx,tdr.getTo());
 				if (startNode != null && endNode != null) {
-					Relationship rel = startNode.createRelationshipTo(endNode, DynamicRelationshipType.withName(tdr.getRelType()));
+					Relationship rel = startNode.createRelationshipTo(endNode, RelationshipType.withName(tdr.getRelType()));
 					for (String propName : tdr.getProps().keySet()) {
 						Object val = tdr.getProps().get(propName);
 						rel.setProperty(propName, val);
@@ -173,13 +174,13 @@ public class DBLoader {
 			}
 			// clear the list
 			createRelationList.clear();
-			tx.success();
+			tx.commit();
 		}
 	}
 	private void processNodeProps() {
 		try ( Transaction tx = database.beginTx()) {
 			for (NodeIdentifier nid : nodePropMap.keySet()) {
-				Node n = getNode(nid);
+				Node n = getNode(tx, nid);
 				Map<String,Object> props = nodePropMap.get(nid);
 				for (String propName : props.keySet()) {
 					Object val = props.get(propName);
@@ -188,24 +189,37 @@ public class DBLoader {
 			}
 			// clear the list
 			nodePropMap.clear();
-			tx.success();
+			tx.commit();
 		}
 				
 	}
-	private Node getNode(NodeIdentifier nid) {
+	private Node getNode(Transaction tx, NodeIdentifier nid) {
 		if (nid.getId() > 0) {
-			return 	database.getNodeById(nid.getId());
+			Node rn = tx.getNodeById(nid.id);
+			return rn;
 		} else {
 			if (nid.getLabel() != null && nid.getIndexProp() != null && nid.getIndexValue() != null) {
-				ResourceIterator<Node> iter = database.findNodes(DynamicLabel.label(nid.getLabel()), nid.getIndexProp(), nid.getIndexValue());;
-				return iter.next(); 
+				ResourceIterator<Node> iter = tx.findNodes(Label.label(nid.getLabel()), nid.getIndexProp(), nid.getIndexValue());
+				Node rn = iter.next();
+				return rn;
 			} else {
 				return null;
 			}
 		}
 	}
-	
-	
-	
+
+	public static Result dbExecute(GraphDatabaseService db, String query) {
+		Result res = null;
+		try (Transaction transaction = db.beginTx()) {
+			res = transaction.execute(query);
+			transaction.commit();
+		}
+		return res;
+	}
+	public static Result dbExecute(Transaction tx, String query) {
+		return tx.execute(query);
+	}
+
+
 
 }

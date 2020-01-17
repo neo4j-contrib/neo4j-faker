@@ -27,8 +27,8 @@ public class NodeIdentifier implements Comparable<NodeIdentifier>{
 	}
 	@Override
 	public int compareTo(NodeIdentifier o) {
-		Long tl = new Long(id);
-		long cl = new Long(o.getId());
+		Long tl = Long.valueOf(id);
+		long cl = Long.valueOf(o.getId());
 		return tl.compareTo(cl);
 	}
 	

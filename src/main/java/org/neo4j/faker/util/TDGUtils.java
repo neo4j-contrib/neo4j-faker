@@ -1,11 +1,20 @@
 package org.neo4j.faker.util;
 
+import org.neo4j.configuration.Config;
+import org.neo4j.configuration.GraphDatabaseSettings;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.config.Setting;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class TDGUtils {
+	public static final String SUN_JAVA_COMMAND = "sun.java.command";
+	public static final String DBMS_DIRECTORIES_NEO4J_PLUGINS = "dbms.directories.plugins";
 	public static String getResourceFilePath(String TDGRoot, String fileName) {
 		//String home = System.getProperty("neo4j.home");
 		//if (home == null || home.equals("null")) {
@@ -40,5 +49,25 @@ public class TDGUtils {
 		props.load(new FileReader(TDGUtils.getResourceFilePath(TDGRoot, propFile)));
 		return props;
 	}
-
+	public static String getPluginDir(Config neoconfig) {
+		String nhd = "./plugins";
+		if (neoconfig != null) {
+			if (neoconfig.getDeclaredSettings().containsKey(DBMS_DIRECTORIES_NEO4J_PLUGINS)) {
+				nhd = neoconfig.get(neoconfig.getSetting(DBMS_DIRECTORIES_NEO4J_PLUGINS)).toString();
+			}
+		} else {
+			// defaulting to system.command
+			String sysCommand = System.getProperty(SUN_JAVA_COMMAND);
+			int startPos = sysCommand.indexOf("--home-dir");
+			if ( startPos > -1) {
+				int toPos = sysCommand.indexOf(" --", startPos + 5);
+				String fragment = sysCommand.substring(startPos, toPos);
+				String[] fragmented = fragment.split("=");
+				if (fragmented.length == 2) {
+					nhd = fragmented[1].trim() + File.separator + "plugins";
+				}
+			}
+		}
+		return nhd;
+	}
 }

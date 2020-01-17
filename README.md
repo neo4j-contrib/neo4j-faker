@@ -13,7 +13,7 @@ The tool is inspired by GraphGen and the faker libraries (java faker), However t
   * Faker Cypher Functions
     * Add the following line in the noo4j.conf file to allow access to the faker functions.
     
-      <pre class="code">dbms.security.procedures.unrestricted=*</pre>
+      <pre class="code">dbms.security.procedures.unrestricted=fkr.*</pre>
     
   * Data Generator Only
     * Register the Data Generator Unmanaged Plugin on the neo4j server

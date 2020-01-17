@@ -1,9 +1,10 @@
 package org.neo4j.faker.ump;
 
+import org.neo4j.configuration.Config;
+import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.faker.core.TDGConstants;
 import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.kernel.configuration.Config;
 import org.neo4j.faker.core.TestDataLoader;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,43 +20,62 @@ import java.util.Properties;
 
 @Path( "/tdg" )
 public class TestDataGen {
-	private static final String CONFIG_HOME_DIR_PROP = "unsupported.dbms.directories.neo4j_home";
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-	GraphDatabaseService database;
+	private DatabaseManagementService dbms;
 	private Config neoConfig;
+	private String dbname = null;
 	private GraphDatabaseService getDatabase() {
-		return database;
+		// for now use the default
+		// assuming null will do that
+		// later on we think about having a url parameter with dbname ?dbname=neo4j
+		if (this.dbname == null) {
+			System.out.println( "Databases list \n" + dbms.listDatabases() );
+			//this.dbname = "";
+		}
+		return dbms.database(this.dbname);
+
 	}
 	// ExecutionEngine engine ;
-	public TestDataGen( @Context GraphDatabaseService database, @Context Config config ) {
-		this.database = database;
+	public TestDataGen( @Context DatabaseManagementService dbms, @Context Config config ) {
+		this.dbms = dbms;
+
 		this.neoConfig = config;
-		
 	}
 	
 	@GET
 	@Produces( MediaType.TEXT_PLAIN )
 	@Path( "/pfile/{pfile}" )
-	public Response load( @PathParam( "pfile" ) String pFile, @Context HttpServletRequest request) throws IOException
+	public Response load( @PathParam( "pfile")  String pFile,  @QueryParam ("dbname") String dbname, @Context HttpServletRequest request) throws IOException
 	{
 		final String file = pFile;
 		final String serverName = request.getServerName();
+		if (dbname != null && !dbname.isEmpty()) {
+			if (dbname.length() > 40) {
+				System.out.println("Warning not accepting dbnames longer than 40 characters");
+			} else {
+				this.dbname = dbname;
+			}
+		} else {
+			// read the default db from config
+			this.dbname = this.neoConfig.get(this.neoConfig.getSetting("dbms.default_database")).toString();
+			System.out.println(" using default database " + this.dbname);
+		}
         // it is loaded from a plugin so the plugin directory is the tdgroot
-		String home = neoConfig.getRaw().get(CONFIG_HOME_DIR_PROP);
+		String pluginsDir = TDGUtils.getPluginDir(this.neoConfig);
 		// op("Home from config " + home);
-		if (home == null) {
-			home = System.getProperty("neo4j.home");
-			op("Home from system property neo4j.home " + System.getProperty("neo4j.home"));
-		}
-		if (home == null) {
-			home = System.getenv("NEO4J_HOME");
-			op("Home from system env NEO4J_HOME " + System.getenv("NEO4J_HOME"));
-		}
-		if (home == null) {
-			home = ".";
-			op("Home is not know via context, working with a '.'");
-		}
-		final String tdgRoot = home + System.getProperty("file.separator") + "plugins" + System.getProperty("file.separator") ;
+//		if (home == null) {
+//			home = System.getProperty("neo4j.home");
+//			op("Home from system property neo4j.home " + System.getProperty("neo4j.home"));
+//		}
+//		if (home == null) {
+//			home = System.getenv("NEO4J_HOME");
+//			op("Home from system env NEO4J_HOME " + System.getenv("NEO4J_HOME"));
+//		}
+//		if (home == null) {
+//			home = ".";
+//			op("Home is not know via context, working with a '.'");
+//		}
+		final String tdgRoot = pluginsDir + System.getProperty("file.separator") ;
 		StreamingOutput output = new StreamingOutput() {
 			
 			@Override
