@@ -3,6 +3,8 @@ With this tool you can generate fake Demo or Test data into the neo4j database v
 
 The tool is inspired by GraphGen and the faker libraries (java faker), However to make it possible to generate larger datasets the person name generator (firstname, lastname and fullname) is implemented in a different way.
 
+From neo4j-faker 0.9.1 and higher the Neo4j database version should at least be 4.x and higher.
+
 ### Note: The Cypher Functions and Data Denerator scripts are meant/build to run in a single thread!!
 
 ## Getting started
@@ -28,9 +30,17 @@ The tool is inspired by GraphGen and the faker libraries (java faker), However t
     * Test the plugin
     * Test the availability of the plugin by calling it with a non existing property file name from you local browser</p>
       
-      <pre class="code">http://127.0.0.1:7474/testdata/tdg/pfile/test.props</pre>
+      ```
+      http://127.0.0.1:7474/testdata/tdg/pfile/test.props
+      ```
       
-      <p>The browser will now give an error message stating that the file test.props cannot be found.</p>
+      Since version 0.9.1 (Neo4j version 4 and higher) you can add the target database as an URL parameter:
+      
+      ```
+      http://127.0.0.1:7474/testdata/tdg/pfile/test.props?dbname=mydb
+      ```
+            
+      The browser will now give an error message stating that the file test.props cannot be found.</p>
  
 
 ### Data Generator Help

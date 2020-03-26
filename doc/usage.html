@@ -5,7 +5,7 @@
 <body>
 <div style="text-align:center"><table width="95%" border="0">
 <tr><td><h2>Usage</h2>
-<hr/><p>You can use the Data Generator as unmanged plugin or in a unit test scenario.<br/>&nbsp;</p>
+<hr/><p>You can use the Data Generator as a unmanged plugin or in a unit test scenario. Since version 3+ of neo4j it is also possible to use fkr functions and procedures this is explained in the readme.<br/>&nbsp;</p>
 </td></tr>
 <tr><td>
 	<h3>Unmanaged Plugin</h3>
@@ -45,7 +45,16 @@ To getting started do the following:
 
 <pre class="code">curl -g http://localhost:7474/testdata/tdg/pfile/tdgexample.props</pre>
 
-<br/>
+    <br/><br/>
+Version 0.9.1 of neo4j-faker must run on Neo4j version 4 and higher. Neo4j version 4 can run multiple databases at the same time. You can specify in the url the parameter 'dbname' to generate data in that specific database.
+    <br/> If ommitted then the default database will be taken. <br/><br/>
+
+
+
+    <pre class="code">curl -g http://localhost:7474/testdata/tdg/pfile/tdgexample.props?dbname=mydb</pre>
+
+
+    <br/>
 </td></tr>
 <tr><td><h3>Embedded</h3></td></tr>
 <tr><td>It is possible to Use the TestDataLoader with the following constructors
