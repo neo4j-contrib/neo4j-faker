@@ -44,7 +44,7 @@ From neo4j-faker 0.9.1 and higher the Neo4j database version should at least be 
       Since version 0.9.1 (Neo4j version 4 and higher) you can add the target database as an URL parameter:
 
       ```
-      http://127.0.0.1:7474/testdata/tdg/pfile/tdgexample.props?dbname=mydb
+      http://127.0.0.1:7474/testdata/tdg/pfile/test.props?dbname=mydb
       ```
 
       The browser will now give an error message stating that the file test.props cannot be found.</p>
