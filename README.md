@@ -65,10 +65,10 @@ foreach (i in range(0,1000) |
 ```
 // generating 500 CreditCards
 foreach (a in range(0,500) |
-    create (c:CreditCard {uid : fkr.code('Demo #### #### ### ###') + a)
+    create (c:CreditCard {uid : fkr.code('Demo #### #### #### ####')})
     set c.limit = fkr.longElement('5000,5000,5000,1000,1000,1000,1000,10000')
     set c.balance = fkr.number(10,1000)
-    }
+)
 ```
 
 ```$xslt
