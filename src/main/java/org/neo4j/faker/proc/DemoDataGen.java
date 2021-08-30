@@ -113,7 +113,14 @@ public class DemoDataGen {
 	@UserFunction(name = "fkr.firstName")
 	@Description("generates a firstname")
 	public String generateFirstName() throws Exception {
-		return DDGFunctions.getInstance( db).getNames().firstName();
+		String n;
+		try {
+			n = DDGFunctions.getInstance( db).getNames().firstName();
+		} catch (Throwable ee) {
+			ee.printStackTrace();
+			throw new Exception(ee);
+		}
+		return n;
 	}
 
 	@UserFunction(name = "fkr.lastName")

@@ -61,13 +61,20 @@ public class TDGUtils {
 			int startPos = sysCommand.indexOf("--home-dir");
 			if ( startPos > -1) {
 				int toPos = sysCommand.indexOf(" --", startPos + 5);
-				String fragment = sysCommand.substring(startPos, toPos);
+				// on windows the --home-dir may be the last in the sysCommand
+				String fragment = "";
+				if (toPos > -1 ) {
+					fragment = sysCommand.substring(startPos, toPos);
+				} else {
+					fragment = sysCommand.substring(startPos);
+				}
 				String[] fragmented = fragment.split("=");
 				if (fragmented.length == 2) {
 					nhd = fragmented[1].trim() + File.separator + "plugins";
 				}
 			}
 		}
+		//System.out.println("Found Plugin Dir " + nhd);
 		return nhd;
 	}
 }
