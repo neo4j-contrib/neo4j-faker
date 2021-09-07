@@ -208,8 +208,10 @@ In this example we use a temporary extra Label 'Proc' to match only the nodes ju
 | ---- | --------- | ----------- |
 | fkr.date	| fkr.date(dateFrom :: STRING?, dateTo :: STRING?) :: (INTEGER?) | generates a date 'long' (yyyyMMdd) in the given period parameter format is yyyy-MM-dd |
 | fkr.dateString	| fkr.dateString(dateFrom :: STRING?, dateTo :: STRING?) :: (STRING?) | generates a date string in the given period parameter format is yyyy-MM-dd |
-| fkr.timestamp	| fkr.timestamp(dateFrom :: STRING?, dateTo :: STRING?) :: (INTEGER?) | generates a date timestamp in the given period parameter format is yyyy-MM-dd |
-| fkr.today	| fkr.today(dateFrom :: STRING?, dateTo :: STRING?) :: (STRING?) | get the current date:yyyy-MM-dd |
+| fkr.getDateTime	| fkr.dateDateTime(dateFrom :: STRING?, dateTo :: STRING?) :: (DATETIME?) | generates a Date Time object in the given period parameter format is yyyy-MM-dd |
+| fkr.getDate	    | fkr.dateDate(dateFrom :: STRING?, dateTo :: STRING?) :: (DATE?) | generates a Date object in the given period parameter format is yyyy-MM-dd |
+| fkr.getTimestamp	| fkr.getTimestamp(dateFrom :: STRING?, dateTo :: STRING?) :: (INTEGER?) | generates a date timestamp in the given period parameter format is yyyy-MM-dd |
+| fkr.today	| fkr.today() :: (STRING?) | get the current date:yyyy-MM-dd |
 | fkr.year	| fkr.year(yearFrom :: INTEGER?, yearTo :: INTEGER?) :: (INTEGER?) | generates year value given period parameters |
 
 #### Boolean Functions

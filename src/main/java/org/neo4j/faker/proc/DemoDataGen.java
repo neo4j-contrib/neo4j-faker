@@ -1,6 +1,5 @@
 package org.neo4j.faker.proc;
 
-import org.neo4j.configuration.Config;
 import org.neo4j.faker.core.DynRel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -9,6 +8,10 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -390,21 +393,56 @@ public class DemoDataGen {
 	    return  (long) DDGFunctions.getInstance( db).getValuegen().getParsedDate(dFrom + "," + dTo).getRandomDate();
     }
 //			case "randomdatetime" :
-    @UserFunction(name = "fkr.timestamp")
-    @Description("generates a date timestamp in the given period parameter format is yyyy-MM-dd")
-    public Long randomDateTime(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
-        return  (long) DDGFunctions.getInstance( db).getValuegen().getParsedDate(dFrom + "," + dTo).getRandomDateTime();
+    @UserFunction(name = "fkr.getTimestamp")
+    @Description("generates a epoch date timestamp in the given period parameter format is yyyy-MM-dd")
+    public Long randomTimestamp(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
+		long ret;
+		try {
+			ret = (long) DDGFunctions.getInstance( db).getValuegen().getParsedDate(dFrom + "," + dTo).getRandomDateTime();
+		} catch (Throwable tt) {
+			tt.printStackTrace();
+			throw new Exception(tt);
+		}
+        return  ret ;
     }
-//			case "year" :
+	@UserFunction(name = "fkr.getDateTime")
+	@Description("generates a datetime object in the given period parameter format is yyyy-MM-dd")
+	public LocalDateTime randomDateTimeObject(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
+		LocalDateTime ldt;
+		try {
+			long ret = (long) DDGFunctions.getInstance( db).getValuegen().getParsedDate(dFrom + "," + dTo).getRandomDateTime();
+			ldt = Instant.ofEpochMilli(ret).atZone(ZoneId.of("UTC")).toLocalDateTime();
+		} catch (Throwable tt) {
+			tt.printStackTrace();
+			throw new Exception(tt);
+		}
+		return  ldt ;
+	}
+	@UserFunction(name = "fkr.getDate")
+	@Description("generates a date object in the given period parameter format is yyyy-MM-dd")
+	public LocalDate randomDateObject(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
+		LocalDate ldt;
+		try {
+			long ret = (long) DDGFunctions.getInstance( db).getValuegen().getParsedDate(dFrom + "," + dTo).getRandomDateTime();
+			ldt = Instant.ofEpochMilli(ret).atZone(ZoneId.of("UTC")).toLocalDate();
+		} catch (Throwable tt) {
+			tt.printStackTrace();
+			throw new Exception(tt);
+		}
+		return  ldt ;
+	}
+
+
+	//			case "year" :
     @UserFunction(name = "fkr.year")
     @Description("generates year value given period parameters")
-    public Long randomTimeStamp(final @Name ("yearFrom") Long dFrom, final @Name("yearTo") Long dTo) throws Exception {
+    public Long randomYear(final @Name ("yearFrom") Long dFrom, final @Name("yearTo") Long dTo) throws Exception {
         return  (long) DDGFunctions.getInstance( db).getValuegen().getRandomYear(dFrom + "," + dTo);
     }
 //			case "today" :
     @UserFunction(name = "fkr.today")
     @Description("get the current date:yyyy-MM-dd")
-    public String randomYear(final @Name ("dateFrom") String dFrom, final @Name("dateTo") String dTo) throws Exception {
+    public String getToday() throws Exception {
         return  DDGFunctions.getInstance( db).getValuegen().getToday();
     }
 //			case "listfile" :

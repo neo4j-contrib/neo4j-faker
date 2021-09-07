@@ -31,7 +31,8 @@ public class ParsedDate {
 	}
 	public long getRandomDateTime() {
 		int days = rnd.nextInt(daysDiff);
-		return (dStart.getTime() + (days * MILLIS_PER_DAY));
+		long dayPart = Math.round(rnd.nextDouble() * MILLIS_PER_DAY );
+		return (dStart.getTime() + (days * MILLIS_PER_DAY) + dayPart);
 	}
 	public int getRandomDate() {
 		int days = rnd.nextInt(daysDiff);
