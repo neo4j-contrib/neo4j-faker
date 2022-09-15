@@ -10,7 +10,7 @@
     <properties>
         <neo4j.version>4.0.0</neo4j.version>
         <artifactId>neo4jFaker</artifactId>
-        <version>0.9.3</version>
+        <version>0.9.4</version>
     </properties>
     <dependencies>
         <dependency>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.29</version>
+            <version>1.32</version>
         </dependency>
     </dependencies>
     <build>
