@@ -30,11 +30,6 @@
             <artifactId>javafaker</artifactId>
             <version>0.13</version>
         </dependency>
-<!--        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.33</version>
-        </dependency> -->
     </dependencies>
     <build>
         <finalName>${project.artifactId}-${version}</finalName>
