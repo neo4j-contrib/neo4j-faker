@@ -1,6 +1,8 @@
 # 0.9.5
 
 * maintenance
+* Neo4j version 5 support
+* Removed yaml dependency
 
 # 0.9.4
 
