@@ -1,6 +1,5 @@
 package org.neo4j.faker.core;
 
-import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.IndexDefinition;
@@ -208,7 +207,7 @@ public class DBLoader {
 		}
 	}
 
-	public static Result dbExecute(GraphDatabaseService db, String query) {
+/*	public static Result dbExecute(GraphDatabaseService db, String query) {
 		Result res = null;
 		try (Transaction transaction = db.beginTx()) {
 			res = transaction.execute(query);
@@ -216,6 +215,7 @@ public class DBLoader {
 		}
 		return res;
 	}
+*/
 	public static Result dbExecute(Transaction tx, String query) {
 		return tx.execute(query);
 	}

@@ -344,7 +344,7 @@ public class DemoDataGen {
 
 //			case "StringElementsfrom" :
     @UserFunction(name = "fkr.stringElementsFrom")
-    @Description("generate an String array from semicolon separated list of String arrays 'a','b','c';'d','e','f' ")
+    @Description("generate a String array from semicolon separated list of String arrays 'a','b','c';'d','e','f' ")
     public List<String> stringElementsFrom(final @Name("values") String values) throws Exception {
         if (DDGFunctions.getInstance( db).getValuegen().elementsFromIsString(values)) {
             List<String> l = new ArrayList<>();
@@ -357,20 +357,12 @@ public class DemoDataGen {
     }
 
 
-//					if (valuegen.elementsFromIsString(funcDef)) {
-//		r = valuegen.randomStringElements(funcDef);
-//	} else {
-
-	//      case "DoubleElemementsFrom"
-//		r = valuegen.randomDoubleElements(funcDef);
-//	}
-//				break;
     @UserFunction(name = "fkr.doubleElementsFrom")
     @Description("generate an double array from semicolon separated list of double arrays 1.1,2,0.3;3,8.0,23 ")
-    public List<String> doubleElementsFrom(final @Name("values") String values) throws Exception {
-        if (DDGFunctions.getInstance( db).getValuegen().elementsFromIsString(values)) {
-            List<String> l = new ArrayList<>();
-            for (String s:DDGFunctions.getInstance( db).getValuegen().randomStringElements(values) ) {
+    public List<Double> doubleElementsFrom(final @Name("values") String values) throws Exception {
+        if (DDGFunctions.getInstance( db).getValuegen().elementsFromIsDouble(values)) {
+            List<Double> l = new ArrayList<>();
+            for (Double s:DDGFunctions.getInstance( db).getValuegen().randomDoubleElements(values) ) {
                 l.add(s);
             }
             return l;
@@ -455,7 +447,7 @@ public class DemoDataGen {
     @UserFunction(name = "fkr.longFromFile")
     @Description("get a long value from a provided file. File must be in the plugins/ddgres folder")
     public Long longFromFile(final @Name ("fileName") String listFile) throws Exception {
-        return  (Long) DDGFunctions.getInstance( db).getValuegen().getFileValue( listFile + ",integer" );
+        return  (Long) DDGFunctions.getInstance( db).getValuegen().getFileValue( listFile + ",long" );
     }
 
     @UserFunction(name = "fkr.doubleFromFile")
@@ -474,13 +466,13 @@ public class DemoDataGen {
     @UserFunction(name = "fkr.nextLongFromFile")
     @Description("get the next long value from a provided file (per identifier). File must be in the plugins/ddgres folder")
     public Long nextLongFromFile(final @Name ("fileName") String listFile, final @Name("identifier") String ident) throws Exception {
-        return  (Long) DDGFunctions.getInstance( db).getValuegen().getNextFileValue(listFile + ",integer," + ident);
+        return  (Long) DDGFunctions.getInstance( db).getValuegen().getNextFileValue(listFile + ",long," + ident);
     }
 
     @UserFunction(name = "fkr.nextDoubleFromFile")
     @Description("get next double value from a provided file (per identifier). File must be in the plugins/ddgres folder")
     public Double nextDoubleFromFile(final @Name ("fileName") String listFile, final @Name("identifier") String ident) throws Exception {
-        return  (Double) DDGFunctions.getInstance( db).getValuegen().getFileValue(listFile + ",double," + ident);
+        return  (Double) DDGFunctions.getInstance( db).getValuegen().getNextFileValue(listFile + ",double," + ident);
     }
 
 //			case "number" :

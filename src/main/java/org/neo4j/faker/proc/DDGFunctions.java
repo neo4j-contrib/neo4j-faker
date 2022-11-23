@@ -1,7 +1,6 @@
 package org.neo4j.faker.proc;
 
 import com.github.javafaker.Faker;
-import org.neo4j.configuration.Config;
 import org.neo4j.faker.data.ValueGen;
 import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.GraphDatabaseService;

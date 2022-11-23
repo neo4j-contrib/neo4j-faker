@@ -1,11 +1,6 @@
 package org.neo4j.faker.util;
 
 import org.neo4j.configuration.Config;
-import org.neo4j.configuration.GraphDatabaseSettings;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.config.Setting;
 
 import java.io.*;
 import java.util.ArrayList;

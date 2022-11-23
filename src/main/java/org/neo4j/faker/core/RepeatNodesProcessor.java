@@ -3,6 +3,7 @@ package org.neo4j.faker.core;
 import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +60,8 @@ public class RepeatNodesProcessor {
 					String cypher = cypherDefinitions.get(qName).replaceAll("##INPUT##",input);
 					// dlu.setCypher(cypher)
 					out(" ====== executing query name " + dlu.getLookup() + " :" + cypher);
-					Result res = DBLoader.dbExecute(tdl.getDatabase(),cypher);
+					Transaction tx = tdl.getDatabase().beginTx();
+					Result res = DBLoader.dbExecute(tx,cypher);
 					out(" ====== The return columns:  " + res.columns());
 					int size = 0;
 					while (res.hasNext()) {
@@ -72,6 +74,7 @@ public class RepeatNodesProcessor {
 					        dlu.addNodeIdentifier(col.getKey(), new NodeIdentifier(n.getId()));
 					    }
 					}
+					tx.commit();
 					dlu.setResultSize(size);
 					dlu.shuffle();
 					repLUNodes.add(dlu);
@@ -297,8 +300,11 @@ public class RepeatNodesProcessor {
 				// two paramter are there in the def
 				// def contains the query
 
-			    //	Result res = tdl.getDatabase().execute(def);
-			    Result res = DBLoader.dbExecute(tdl.getDatabase(), def);
+			    // Result res = tdl.getDatabase().execute(def);
+			    // Since v4 You cannot access the results when the connection is closed
+			    //
+			    Transaction tx = tdl.getDatabase().beginTx();
+			    Result res = DBLoader.dbExecute(tx, def);
 				out(" ====== The return columns:  " + res.columns());
 				ArrayList<String> vals = new ArrayList<String>();
 				while (res.hasNext()) {
@@ -308,6 +314,7 @@ public class RepeatNodesProcessor {
 						vals.add( "" +  col.getValue());
 				    }
 				}
+				tx.commit();
 				if (vals.size() > 0) {
 					return vals.toArray(new String[0]);
 				} else {

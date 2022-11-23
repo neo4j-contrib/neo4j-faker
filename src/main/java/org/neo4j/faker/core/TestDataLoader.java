@@ -1,11 +1,7 @@
 package org.neo4j.faker.core;
 
 import org.neo4j.faker.data.PropertyParser;
-import org.neo4j.faker.util.TDGUtils;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.QueryExecutionException;
-import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.*;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -127,7 +123,11 @@ public class TestDataLoader {
 		for (DefLUNode lud : ludef) {
 			
 			out(" executing " + lud.getLookup() + "  cypher query " + lud.getCypher());
-			Result res = DBLoader.dbExecute( database,lud.getCypher());
+			// v 4
+			// does not allow to access the results when the transaction is closed
+			// so we need the transaction first
+			Transaction tx = database.beginTx();
+			Result res = DBLoader.dbExecute( tx,lud.getCypher());
 			// out(" qu sery result " + res.dumpToString());
 			out(" The return columns:  " + res.columns());
 			int size = 0; 
@@ -141,6 +141,7 @@ public class TestDataLoader {
 			        lud.addNodeIdentifier(col.getKey(), new NodeIdentifier(n.getId()));
 			    }
 			}
+			tx.commit();
 			lud.setResultSize(size);
 			out(" processing lookup " + lud.getLookup() + " found " + size + " results " );
 			lud.shuffle(); // shuffles all nodes in the list for every key
@@ -283,8 +284,10 @@ public class TestDataLoader {
 			if (cypher.equals("")) break;
 			out(" ============== post cypher query " + i + "===================");
 			try {
-				Result er = DBLoader.dbExecute(database, cypher);
+				Transaction tx = database.beginTx();
+				Result er = DBLoader.dbExecute(tx, cypher);
 				out(er.resultAsString());
+				tx.commit();
 			} catch (QueryExecutionException qe) {
 				if (qe.getMessage().indexOf("An equivalent index already exists") > -1 ) {
 					out("WARNING " + qe.getMessage());
@@ -301,8 +304,10 @@ public class TestDataLoader {
 			if (cypher.equals("")) break;
 			out(" ============== pre cypher query " + i + "===================");
 			try {
-				Result er = DBLoader.dbExecute(database,cypher);
+				Transaction tx = database.beginTx();
+				Result er = DBLoader.dbExecute(tx,cypher);
 				out(er.resultAsString());
+				tx.commit();
 			} catch (QueryExecutionException qe) {
 				if (qe.getMessage().indexOf("An equivalent index already exists") > -1 ) {
 					out("WARNING " + qe.getMessage());

@@ -6,6 +6,7 @@ import org.neo4j.faker.core.TDGConstants;
 import org.neo4j.faker.util.TDGUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.faker.core.TestDataLoader;
+import org.neo4j.graphdb.config.Setting;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -57,7 +58,16 @@ public class TestDataGen {
 			}
 		} else {
 			// read the default db from config
-			this.dbname = this.neoConfig.get(this.neoConfig.getSetting("dbms.default_database")).toString();
+			Setting sett = null;
+			if (this.neoConfig.getDeclaredSettings().containsKey("dbms.default_database")) {
+
+				sett = this.neoConfig.getSetting("dbms.default_database");
+			} else if (this.neoConfig.getDeclaredSettings().containsKey("initial.dbms.default_database")) {
+				sett = this.neoConfig.getSetting("initial.dbms.default_database");
+			}
+			if (sett != null) {
+				this.dbname = this.neoConfig.get(sett).toString();
+			}
 			System.out.println(" using default database " + this.dbname);
 		}
         // it is loaded from a plugin so the plugin directory is the tdgroot

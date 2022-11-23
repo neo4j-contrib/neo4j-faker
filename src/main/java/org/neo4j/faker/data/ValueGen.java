@@ -236,27 +236,64 @@ public class ValueGen {
 			parsedELMS.put(def,ps);
 			return true;
 		} else {
-			// numeric
-			List<Long[]> llist = new ArrayList<Long[]>();
-			for (String s: vals) {
-				if (!s.isEmpty()) {
-					List<Long> slist = new ArrayList<Long>();
-					String[] aval = s.split(",");
-					for (String a:aval) {
-						if (!a.isEmpty()) {
-							slist.add(Long.valueOf(a.replace("'", " ").trim()));
-						}
-					}
-					Long[] subArray = slist.toArray(new Long[0]);
-					llist.add(subArray);
-				} 
-			}
-			Long[][] ps = llist.toArray(new Long[0][0]);
-			parsedELMS.put(def, ps);
 			return false;
 		}
 		
 	}
+	public boolean elementsFromIsDouble(String def) {
+		if (parsedELMS.containsKey(def)) {
+			return (parsedELMS.get(def) instanceof Double[][]);
+		}
+		// parse it
+		String[] vals = def.split(";");
+		// Double
+		List<Double[]> llist = new ArrayList<Double[]>();
+		for (String s: vals) {
+			if (!s.isEmpty()) {
+				List<Double> slist = new ArrayList<Double>();
+				String[] aval = s.split(",");
+				for (String a:aval) {
+					if (!a.isEmpty()) {
+						slist.add(Double.valueOf(a.replace("'", " ").trim()));
+					}
+				}
+				Double[] subArray = slist.toArray(new Double[0]);
+				llist.add(subArray);
+			}
+		}
+		Double[][] ps = llist.toArray(new Double[0][0]);
+		parsedELMS.put(def, ps);
+		return true;
+	}
+
+
+	public boolean elementsFromIsLong(String def) {
+		if (parsedELMS.containsKey(def)) {
+			return (parsedELMS.get(def) instanceof Long[][]);
+		}
+		// parse it
+		String[] vals = def.split(";");
+		// Double
+		List<Long[]> llist = new ArrayList<Long[]>();
+		for (String s: vals) {
+			if (!s.isEmpty()) {
+				List<Long> slist = new ArrayList<Long>();
+				String[] aval = s.split(",");
+				for (String a:aval) {
+					if (!a.isEmpty()) {
+						slist.add(Long.valueOf(a.replace("'", " ").trim()));
+					}
+				}
+				Long[] subArray = slist.toArray(new Long[0]);
+				llist.add(subArray);
+			}
+		}
+		Long[][] ps = llist.toArray(new Long[0][0]);
+		parsedELMS.put(def, ps);
+		return true;
+	}
+
+
 	public String[] randomStringElements(String def) {
 		if (def == null) return new String[0];
 		String[][] all = (String[][]) parsedELMS.get(def);
@@ -301,6 +338,8 @@ public class ValueGen {
 			return Integer.valueOf(v);
 		} else if (returnType.equalsIgnoreCase("double")){
 			return Double.valueOf(v);
+		} else if (returnType.equalsIgnoreCase("long")){
+			return Long.valueOf(v);
 		} else {
 			return v; // defaults to string
 		}
@@ -337,6 +376,8 @@ public class ValueGen {
 			return Integer.valueOf(v);
 		} else if (returnType.equalsIgnoreCase("double")){
 			return Double.valueOf(v);
+		} else if (returnType.equalsIgnoreCase("long")){
+			return Long.valueOf(v);
 		} else {
 			return v; // defaults to string
 		}
